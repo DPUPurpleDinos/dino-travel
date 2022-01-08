@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/reservations")
+@CrossOrigin(origins = "http://35.171.66.24:8080/")
 public class ReservationController {
 
     @Autowired

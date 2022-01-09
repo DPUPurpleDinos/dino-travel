@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.4-SSL'
 sourceCompatibility = '17'
 
 repositories {

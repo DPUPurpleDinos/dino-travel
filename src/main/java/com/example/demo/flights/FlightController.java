@@ -9,9 +9,9 @@ import java.util.NoSuchElementException;
 
 import org.springframework.web.bind.annotation.GetMapping;
 
+@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 @RestController
 @RequestMapping("/api/flights")
-@CrossOrigin(origins = "http://35.171.66.24:8080/")
 public class FlightController {
 
     @Autowired

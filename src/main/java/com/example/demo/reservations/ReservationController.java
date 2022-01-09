@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 @RestController
 @RequestMapping("/api/reservations")
-@CrossOrigin(origins = "http://35.171.66.24:8080/")
 public class ReservationController {
 
     @Autowired

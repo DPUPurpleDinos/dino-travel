@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://35.171.66.24:8080/")
+@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 public class UserController {
 
     @Autowired

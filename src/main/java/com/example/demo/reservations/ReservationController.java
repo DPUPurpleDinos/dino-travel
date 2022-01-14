@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {

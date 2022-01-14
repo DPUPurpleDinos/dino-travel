@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 
 import org.springframework.web.bind.annotation.GetMapping;
 
-@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 @RestController
 @RequestMapping("/api/flights")
 public class FlightController {
@@ -51,7 +50,6 @@ public class FlightController {
         Flight existingFlight = flightRepository.findById(flightId).orElseThrow(() -> new NoSuchElementException("Could not find flight with id: " + flightId));
 
         flightRepository.delete(existingFlight);
-
         return ResponseEntity.ok().build();
     }
 }

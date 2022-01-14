@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "https://daniel-mccarthy.github.io/DinoTravelFrontend/")
 public class UserController {
 
     @Autowired
@@ -50,4 +49,5 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
 }

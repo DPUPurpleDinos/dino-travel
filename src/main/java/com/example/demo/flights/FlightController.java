@@ -11,11 +11,9 @@ import org.springframework.hateoas.EntityModel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 import org.springframework.web.bind.annotation.GetMapping;
 
-
+// Generate a 404 status and an exception message if a flight is not found
 @ControllerAdvice
 class FlightNotFoundAdvice {
 
@@ -26,6 +24,7 @@ class FlightNotFoundAdvice {
         return ex.getMessage();
     }
 }
+
 @RestController
 @RequestMapping("/api/flights")
 public class FlightController {
@@ -45,8 +44,7 @@ public class FlightController {
                 .map(flightAssembler::toModel)
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(flights,
-                linkTo(methodOn(FlightController.class).getAllFlights()).withSelfRel());
+        return CollectionModel.of(flights);
     }
 
     @GetMapping("/{id}")
@@ -78,7 +76,8 @@ public class FlightController {
                 .body(entityModel);
     }
 
-    @PostMapping ResponseEntity<?> createFlight(@RequestBody Flight flight) {
+    @PostMapping
+    ResponseEntity<?> createFlight(@RequestBody Flight flight) {
         EntityModel<Flight> entityModel = flightAssembler.toModel(flightRepository.save(flight));
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);

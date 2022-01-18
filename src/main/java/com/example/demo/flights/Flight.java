@@ -4,6 +4,10 @@ import lombok.Data;
 
 import javax.persistence.*;
 
+/**
+ * A representation of a flight that allows values
+ * to be mapped to keys in a relational database
+ */
 @Data
 @Entity
 @Table(name = "flights")
@@ -12,6 +16,7 @@ public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "flight_id")
+    // the flight_id will not need to be set since it is auto generated
     public int flight_id;
 
     @Column(name = "seats_available")
@@ -32,6 +37,15 @@ public class Flight {
     @Column(name = "arrival_time")
     public String arrival_time;
 
+    /**
+     * The constructor to create Flight objects
+     * @param seats_available Number of seats left that are able to be booked
+     * @param flight_provider The name of the airline providing the flight(s)
+     * @param departure_airport The airport code for the departure airport
+     * @param departure_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to depart
+     * @param arrival_airport The airport code for the arrival airport
+     * @param arrival_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to land
+     */
     public Flight(int seats_available, String flight_provider, String departure_airport, String departure_time, String arrival_airport, String arrival_time) {
         setSeats_available(seats_available);
         setFlight_provider(flight_provider);
@@ -41,7 +55,13 @@ public class Flight {
         setArrival_time(arrival_time);
     }
 
+    /**
+     * Default constructor
+     */
     public Flight() {}
+
+
+    // Getters and setters
 
     public int getFlight_id() {
         return flight_id;

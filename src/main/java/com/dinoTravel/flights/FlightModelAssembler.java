@@ -1,4 +1,4 @@
-package com.example.demo.flights;
+package com.dinoTravel.flights;
 
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;

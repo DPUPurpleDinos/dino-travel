@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.dinoTravel;
 
 public class Greeting {
   private final long id;

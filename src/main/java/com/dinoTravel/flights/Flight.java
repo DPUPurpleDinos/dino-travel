@@ -1,4 +1,4 @@
-package com.example.demo.flights;
+package com.dinoTravel.flights;
 
 import lombok.Data;
 

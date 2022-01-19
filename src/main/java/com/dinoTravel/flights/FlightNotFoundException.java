@@ -1,4 +1,4 @@
-package com.example.demo.flights;
+package com.dinoTravel.flights;
 
 public class FlightNotFoundException extends RuntimeException {
     FlightNotFoundException(int flightId) {

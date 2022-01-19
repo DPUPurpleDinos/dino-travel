@@ -1,4 +1,4 @@
-package com.example.demo.reservations;
+package com.dinoTravel.reservations;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

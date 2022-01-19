@@ -1,4 +1,4 @@
-package com.example.demo.users;
+package com.dinoTravel.users;
 import lombok.Data;
 import javax.persistence.*;
 

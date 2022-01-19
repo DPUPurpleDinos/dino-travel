@@ -1,9 +1,5 @@
-package com.example.demo.flights;
+package com.dinoTravel.flights;
 
-import com.amadeus.exceptions.ResponseException;
-import com.amadeus.referenceData.Locations;
-import com.amadeus.resources.Location;
-import com.example.demo.AmadeusConnect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

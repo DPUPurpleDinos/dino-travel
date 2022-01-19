@@ -1,4 +1,4 @@
-package com.example.demo.users;
+package com.dinoTravel.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.dinoTravel;
 
 import com.amadeus.Amadeus;
 import com.amadeus.Params;

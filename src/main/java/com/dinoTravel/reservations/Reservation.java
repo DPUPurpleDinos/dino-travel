@@ -1,4 +1,4 @@
-package com.example.demo.reservations;
+package com.dinoTravel.reservations;
 
 
 import lombok.Data;

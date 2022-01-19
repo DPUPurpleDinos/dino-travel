@@ -1,11 +1,10 @@
-package com.example.demo.locations;
+package com.dinoTravel.locations;
 
 import com.amadeus.exceptions.ResponseException;
 import com.amadeus.resources.Location;
-import com.example.demo.AmadeusConnect;
+import com.dinoTravel.AmadeusConnect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 

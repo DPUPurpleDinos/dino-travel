@@ -1,6 +1,5 @@
-package com.example.demo;
+package com.dinoTravel;
 
-import com.example.demo.Greeting;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.web.bind.annotation.GetMapping;

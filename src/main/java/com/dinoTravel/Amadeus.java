@@ -1,6 +1,5 @@
 package com.dinoTravel;
 
-import com.amadeus.Amadeus;
 import com.amadeus.Params;
 import com.amadeus.exceptions.ResponseException;
 import com.amadeus.referenceData.Locations;
@@ -10,18 +9,19 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Public enum
+ * Public enum that has the connection to the Amadeus API
+ * use these methods if you want to get flight data
  */
-public enum AmadeusConnect {
-  INSTANCE;
-  private final Amadeus amadeus;
+public enum Amadeus {
+  Connect;
+  private final com.amadeus.Amadeus amadeus;
 
   /**
    * Connects to the Amadeus Flight API
    * with key and secretKey stored in
    * application.properties
    */
-  AmadeusConnect() {
+  Amadeus() {
     Properties properties = new Properties();
     try(FileReader fileReader = new FileReader("src/main/resources/application.properties")){
       properties.load(fileReader);
@@ -30,7 +30,7 @@ public enum AmadeusConnect {
     }
     String key = properties.getProperty("key");
     String secretKey = properties.getProperty("secretKey");
-    this.amadeus = Amadeus
+    this.amadeus = com.amadeus.Amadeus
         .builder(key, secretKey)
         .build();
   }

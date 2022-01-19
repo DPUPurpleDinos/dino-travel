@@ -4,8 +4,8 @@ plugins {
 	id 'java'
 }
 
-group = 'com.example'
-version = '0.0.5-CorsFix'
+group = 'com.dinoTravel'
+version = '0.0.6-CorsFix'
 sourceCompatibility = '17'
 
 repositories {

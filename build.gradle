@@ -21,6 +21,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
 	runtimeOnly 'com.h2database:h2'
+	implementation 'com.amadeus:amadeus-java:5.8.2'
 }
 
 test {

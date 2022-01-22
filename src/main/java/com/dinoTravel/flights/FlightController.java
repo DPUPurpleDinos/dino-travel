@@ -126,6 +126,8 @@ public class FlightController {
      */
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteFlight(@PathVariable ("id") int flightId) {
+        flightRepository.findById(flightId).orElseThrow(() -> new FlightNotFoundException(flightId));
+
         flightRepository.deleteById(flightId);
 
         return ResponseEntity.noContent().build();

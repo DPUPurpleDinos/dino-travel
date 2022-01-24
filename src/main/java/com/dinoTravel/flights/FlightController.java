@@ -80,6 +80,7 @@ public class FlightController {
 
     /**
      * Update an existing flight already contained in the FlightRepository
+     * Otherwise save it to the FlightRepository
      * @param flight The body of the flight
      * @param flightId The id for the existing flight
      * @return The body of the updated flight as a ResponseEntity
@@ -87,23 +88,23 @@ public class FlightController {
     @PutMapping("/{id}")
     ResponseEntity<?> updateFlight(@RequestBody Flight flight, @PathVariable("id") int flightId) {
         Flight existingFlight = flightRepository.findById(flightId)
-                .map(newFlight -> {
-                    newFlight.setSeats_available(flight.getSeats_available());
-                    newFlight.setFlight_provider(flight.getFlight_provider());
-                    newFlight.setDeparture_airport(flight.getDeparture_airport());
-                    newFlight.setDeparture_time(flight.getDeparture_time());
-                    newFlight.setArrival_airport(flight.getArrival_airport());
-                    newFlight.setArrival_time(flight.getArrival_time());
-                    return flightRepository.save(newFlight);
-                }).orElseGet(() -> {
-                    flight.setFlight_id(flightId);
-                    return flightRepository.save(flight);
-                });
+            .map(newFlight -> {
+                newFlight.setSeats_available(flight.getSeats_available());
+                newFlight.setFlight_provider(flight.getFlight_provider());
+                newFlight.setDeparture_airport(flight.getDeparture_airport());
+                newFlight.setDeparture_time(flight.getDeparture_time());
+                newFlight.setArrival_airport(flight.getArrival_airport());
+                newFlight.setArrival_time(flight.getArrival_time());
+                return flightRepository.save(newFlight);
+            }).orElseGet(() -> {
+                flight.setFlight_id(flightId);
+                return flightRepository.save(flight);
+            });
         EntityModel<Flight> entityModel = flightAssembler.toModel(existingFlight);
 
         return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel);
     }
 
     /**
@@ -123,8 +124,9 @@ public class FlightController {
      * @param flightId The id for a flight to be deleted
      * @return An empty body as a ResponseEntity
      */
-    @DeleteMapping
-    ResponseEntity<?> deleteFlight(@PathVariable("id") int flightId) {
+    @DeleteMapping("/{id}")
+    ResponseEntity<?> deleteFlight(@PathVariable ("id") int flightId) {
+        flightRepository.findById(flightId).orElseThrow(() -> new FlightNotFoundException(flightId));
 
         flightRepository.deleteById(flightId);
 

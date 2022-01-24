@@ -1,10 +1,13 @@
 package com.dinoTravel.reservations;
 
-
 import lombok.Data;
 
 import javax.persistence.*;
 
+/**
+ * A representation of a reservation that allows values
+ * to be mapped to keys in a relational database
+ */
 @Data
 @Entity
 @Table(name = "reservations")
@@ -13,6 +16,7 @@ public class Reservation {
     @Id
     @GeneratedValue
     @Column(name = "reservation_id")
+    // the reservation_id will not need to be set since it is auto generated
     public int reservation_id;
 
     @Column(name = "user_id")
@@ -36,6 +40,16 @@ public class Reservation {
     @Column(name = "price")
     public double price;
 
+    /**
+     * The constructor to create Reservation objects
+     * @param user_id The ID of a user creating the reservation
+     * @param trip_type One way, round trip, or multi city
+     * @param outgoing_flight_type The class of the outgoing flight
+     * @param outgoing_flight_id The ID for the outgoing flight
+     * @param returning_flight_type The class of the returning flight
+     * @param returning_flight_id The ID for the returning flight
+     * @param price The total price for all flights
+     */
     public Reservation(int user_id, String trip_type, String outgoing_flight_type, int outgoing_flight_id, String returning_flight_type, int returning_flight_id, double price) {
         setUser_id(user_id);
         setTrip_type(trip_type);
@@ -46,7 +60,12 @@ public class Reservation {
         setPrice(price);
     }
 
+    /**
+     * Default constructor
+     */
     public Reservation() {}
+
+    // Getters and setters
 
     public int getReservation_id() {
         return reservation_id;

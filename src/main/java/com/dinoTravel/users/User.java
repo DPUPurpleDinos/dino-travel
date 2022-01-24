@@ -2,6 +2,10 @@ package com.dinoTravel.users;
 import lombok.Data;
 import javax.persistence.*;
 
+/**
+ * A representation of a user that allows values
+ * to be mapped to keys in a relational database
+ */
 @Data
 @Entity
 @Table(name = "users")
@@ -10,6 +14,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
+    // the user_id will not need to be set since it is auto generated
     public int user_id;
 
     @Column(name = "first_name")
@@ -24,6 +29,13 @@ public class User {
     @Column(name = "dob")
     public String dob;
 
+    /**
+     * The constructor to create User objects
+     * @param first_name First name of the user
+     * @param last_name Last name of the user
+     * @param email The user's email address
+     * @param dob The date (YYYY-MM-DD) the user was born
+     */
     public User(String first_name, String last_name, String email, String dob) {
         setFirst_name(first_name);
         setLast_name(last_name);
@@ -31,7 +43,13 @@ public class User {
         setDob(dob);
     }
 
+    /**
+     * Default constructor
+     */
     public User() {}
+
+
+    // Getters and setters
 
     public int getUser_id() {
         return user_id;

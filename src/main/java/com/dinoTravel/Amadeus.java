@@ -3,6 +3,7 @@ package com.dinoTravel;
 import com.amadeus.Params;
 import com.amadeus.exceptions.ResponseException;
 import com.amadeus.referenceData.Locations;
+import com.amadeus.resources.FlightOfferSearch;
 import com.amadeus.resources.Location;
 import java.io.FileReader;
 import java.io.IOException;
@@ -46,5 +47,12 @@ public enum Amadeus {
         .and("subType", Locations.AIRPORT));
   }
 
-
+  public FlightOfferSearch[]flightOffer(String origin, String dest, String departureDate, String returnDate, int numAdults) throws ResponseException {
+    return amadeus.shopping.flightOffersSearch.get(Params
+        .with("originLocationCode", origin)
+        .and("destinationLocationCode", dest)
+        .and("departureDate", departureDate)
+        .and("returnDate", returnDate)
+        .and("adults", numAdults));
+  }
 }

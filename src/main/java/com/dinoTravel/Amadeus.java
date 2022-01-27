@@ -40,16 +40,20 @@ public enum Amadeus {
   }
 
   /**
-   * @param keyword Beginning couple letters you want to match
+   * @param parameters the parameters for the function
    * @return returns an array of location objects
    * @throws ResponseException Amadeus response error
    */
-  public Location[] location(String keyword) throws ResponseException {
-    return amadeus.referenceData.locations.get(Params
-        .with("keyword", keyword)
-        .and("subType", Locations.AIRPORT));
+  public Location[] getLocationNames(Params parameters) throws ResponseException {
+    return amadeus.referenceData.locations.get(parameters);
   }
 
+  /**
+   * Amadeus api function to request flight offers
+   * @param parameters the paramaters of the request
+   * @return an array with all the offers available
+   * @throws ResponseException Amadeus response error
+   */
   public FlightOfferSearch[] getFlightOffers(Params parameters) throws ResponseException {
     return amadeus.shopping.flightOffersSearch.get(parameters);
   }

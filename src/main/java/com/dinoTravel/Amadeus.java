@@ -2,12 +2,14 @@ package com.dinoTravel;
 
 import com.amadeus.Params;
 import com.amadeus.exceptions.ResponseException;
-import com.amadeus.referenceData.Locations;
 import com.amadeus.resources.FlightOfferSearch;
 import com.amadeus.resources.Location;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Public enum that has the connection to the Amadeus API
@@ -23,11 +25,12 @@ public enum Amadeus {
    * application.properties
    */
   Amadeus() {
-    //open the properties file
+    //make a properties object
     Properties properties = new Properties();
-    try(FileReader fileReader = new FileReader("src/main/resources/application.properties")){
-      properties.load(fileReader);
-    } catch (IOException e) {
+    //open the application file from the classpath
+    try(InputStream is = getClass().getResourceAsStream("/application.properties")){
+      properties.load(is);
+    }catch (IOException e){
       e.printStackTrace();
     }
     //set the key and secretKey

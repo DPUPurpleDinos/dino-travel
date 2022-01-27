@@ -23,7 +23,6 @@ public class LocationsController {
     p.and("subType", Locations.ANY);
     p.and("page[limit]", 100);
     p.and("view", "LIGHT");
-
     return gson.toJson(Amadeus.Connect.getLocationNames(p));
   }
 }

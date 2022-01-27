@@ -23,14 +23,17 @@ public enum Amadeus {
    * application.properties
    */
   Amadeus() {
+    //open the properties file
     Properties properties = new Properties();
     try(FileReader fileReader = new FileReader("src/main/resources/application.properties")){
       properties.load(fileReader);
     } catch (IOException e) {
       e.printStackTrace();
     }
+    //set the key and secretKey
     String key = properties.getProperty("key");
     String secretKey = properties.getProperty("secretKey");
+    //connect to the api
     this.amadeus = com.amadeus.Amadeus
         .builder(key, secretKey)
         .build();
@@ -47,12 +50,7 @@ public enum Amadeus {
         .and("subType", Locations.AIRPORT));
   }
 
-  public FlightOfferSearch[]flightOffer(String origin, String dest, String departureDate, String returnDate, int numAdults) throws ResponseException {
-    return amadeus.shopping.flightOffersSearch.get(Params
-        .with("originLocationCode", origin)
-        .and("destinationLocationCode", dest)
-        .and("departureDate", departureDate)
-        .and("returnDate", returnDate)
-        .and("adults", numAdults));
+  public FlightOfferSearch[] getFlightOffers(Params parameters) throws ResponseException {
+    return amadeus.shopping.flightOffersSearch.get(parameters);
   }
 }

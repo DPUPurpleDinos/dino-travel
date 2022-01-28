@@ -114,6 +114,25 @@ public class ReservationController {
     }
 
     /**
+     *
+     * @param reservations
+     * @return
+     */
+    @PostMapping("/multi")
+    CollectionModel<EntityModel<Reservation>> createReservations(@RequestBody Reservation [] reservations) {
+        for (Reservation res : reservations) {
+            reservationAssembler.toModel(reservationRepository.save(res));
+        }
+
+        // TODO change return body and add a GET /multi
+        List<EntityModel<Reservation>> allReservations = reservationRepository.findAll().stream()
+                .map(reservationAssembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(allReservations);
+    }
+
+    /**
      * Delete a reservation from the ReservationRepository
      * @param reservationId The ID for a reservation to delete
      * @return An empty body as a ResponseEntity

@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 Main-Class: com.dinoTravel.DinoTravel
 
+Class-Path: src/main/resources/application.properties

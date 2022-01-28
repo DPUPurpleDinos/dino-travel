@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.dinoTravel'
-version = '0.0.6-ResponseCodes'
+version = '0.0.7-ApiHookUp'
 sourceCompatibility = '17'
 
 repositories {
@@ -23,6 +23,7 @@ dependencies {
 	runtimeOnly 'mysql:mysql-connector-java'
 	runtimeOnly 'com.h2database:h2'
 	implementation 'com.amadeus:amadeus-java:5.8.2'
+	implementation 'com.google.code.gson:gson:2.8.9'
 }
 
 test {

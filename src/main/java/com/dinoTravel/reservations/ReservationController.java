@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ class ReservationNotFoundAdvice {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String reservationNotFoundHandler(ReservationNotFoundException ex) { return ex.getMessage(); }
 }
+
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
@@ -57,6 +59,15 @@ public class ReservationController {
             .collect(Collectors.toList());
 
         return CollectionModel.of(reservations);
+    }
+
+    /**
+     * Returns all Reservations saved in the ReservationRepository
+     * @return A collection of Reservations and their bodies as an EntityModel
+     */
+    @GetMapping("/multi")
+    CollectionModel<EntityModel<Reservation>> getAllReservationsMulti() {
+        return getAllReservations();
     }
 
     /**
@@ -114,9 +125,9 @@ public class ReservationController {
     }
 
     /**
-     *
-     * @param reservations
-     * @return
+     * Bulk add reservations to the ReservationRepository
+     * @param reservations A JSON array of Reservations
+     * @return A collection of Reservations and their bodies as an EntityModel
      */
     @PostMapping("/multi")
     CollectionModel<EntityModel<Reservation>> createReservations(@RequestBody Reservation [] reservations) {
@@ -124,12 +135,11 @@ public class ReservationController {
             reservationAssembler.toModel(reservationRepository.save(res));
         }
 
-        // TODO change return body and add a GET /multi
-        List<EntityModel<Reservation>> allReservations = reservationRepository.findAll().stream()
+        List<EntityModel<Reservation>> newReservations = Arrays.stream(reservations)
                 .map(reservationAssembler::toModel)
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(allReservations);
+        return CollectionModel.of(newReservations);
     }
 
     /**

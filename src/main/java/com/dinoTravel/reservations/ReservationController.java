@@ -95,10 +95,11 @@ public class ReservationController {
             .map(newReservation -> {
                 newReservation.setUser_id(reservation.getUser_id());
                 newReservation.setTrip_type(reservation.getTrip_type());
-                newReservation.setOutgoing_flight_type(reservation.getOutgoing_flight_type());
-                newReservation.setOutgoing_flight_id(reservation.getOutgoing_flight_id());
-                newReservation.setReturning_flight_type(reservation.getReturning_flight_type());
-                newReservation.setReturning_flight_id(reservation.getReturning_flight_id());
+                newReservation.setFlight_id(reservation.getFlight_id());
+                newReservation.setTraveler_type(reservation.getTraveler_type());
+                newReservation.setTraveler_name(reservation.getTraveler_name());
+                newReservation.setSeat_id(reservation.getSeat_id());
+                newReservation.setSeat_type(reservation.getSeat_type());
                 newReservation.setPrice(reservation.getPrice());
                 return reservationRepository.save(newReservation);
             }).orElseGet(() -> {

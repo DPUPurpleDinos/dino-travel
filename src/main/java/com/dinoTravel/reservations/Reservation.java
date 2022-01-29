@@ -13,50 +13,60 @@ import javax.persistence.*;
 @Table(name = "reservations")
 public class Reservation {
 
+
+    // the reservation_id will not need to be set since it is auto generated
     @Id
     @GeneratedValue
     @Column(name = "reservation_id")
-    // the reservation_id will not need to be set since it is auto generated
     public int reservation_id;
 
+    // Foreign key
     @Column(name = "user_id")
     public int user_id;
 
     @Column(name = "trip_type")
     public String trip_type;
 
-    @Column(name = "outgoing_flight_type")
-    public String outgoing_flight_type;
+    // Foreign key
+    @Column(name = "flight_id")
+    public int flight_id;
 
-    @Column(name = "outgoing_flight_id")
-    public int outgoing_flight_id;
+    @Column(name = "traveler_type")
+    public String traveler_type;
 
-    @Column(name = "returning_flight_type")
-    public String returning_flight_type;
+    @Column(name = "traveler_name")
+    public String traveler_name;
 
-    @Column(name = "returning_flight_id")
-    public int returning_flight_id;
+    // ID is saved as a String to use the seat's natural key (ex: "27A")
+    @Column(name = "seat_id")
+    public String seat_id;
+
+    @Column(name = "seat_type")
+    public String seat_type;
 
     @Column(name = "price")
     public double price;
 
     /**
      * The constructor to create Reservation objects
-     * @param user_id The ID of a user creating the reservation
-     * @param trip_type One way, round trip, or multi city
-     * @param outgoing_flight_type The class of the outgoing flight
-     * @param outgoing_flight_id The ID for the outgoing flight
-     * @param returning_flight_type The class of the returning flight
-     * @param returning_flight_id The ID for the returning flight
-     * @param price The total price for all flights
+     * @param user_id The ID of the user creating the reservation. Relates to a user in the Users table
+     * @param trip_type ONE_WAY, ROUND_TRIP, MULTI_CITY
+     * @param flight_id The ID of the flight. Relates to a flight in the Flights table
+     * @param traveler_type ADULT, CHILD
+     * @param traveler_name The name of the traveler reserving the seat
+     * @param seat_id The ID of the seat
+     * @param seat_type FIRST_CLASS, ECONOMY, BUSINESS
+     * @param price The price of the reserved seat
      */
-    public Reservation(int user_id, String trip_type, String outgoing_flight_type, int outgoing_flight_id, String returning_flight_type, int returning_flight_id, double price) {
+    public Reservation(int user_id, String trip_type, int flight_id, String traveler_type,
+           String traveler_name, String seat_id, String seat_type, double price) {
         setUser_id(user_id);
         setTrip_type(trip_type);
-        setOutgoing_flight_type(outgoing_flight_type);
-        setOutgoing_flight_id(outgoing_flight_id);
-        setReturning_flight_type(returning_flight_type);
-        setReturning_flight_id(returning_flight_id);
+        setFlight_id(flight_id);
+        setTraveler_type(traveler_type);
+        setTraveler_name(traveler_name);
+        setSeat_id(seat_id);
+        setSeat_type(seat_type);
         setPrice(price);
     }
 
@@ -91,36 +101,44 @@ public class Reservation {
         this.trip_type = trip_type;
     }
 
-    public String getOutgoing_flight_type() {
-        return outgoing_flight_type;
+    public int getFlight_id() {
+        return flight_id;
     }
 
-    public void setOutgoing_flight_type(String outgoing_flight_type) {
-        this.outgoing_flight_type = outgoing_flight_type;
+    public void setFlight_id(int flight_id) {
+        this.flight_id = flight_id;
     }
 
-    public int getOutgoing_flight_id() {
-        return outgoing_flight_id;
+    public String getTraveler_type() {
+        return traveler_type;
     }
 
-    public void setOutgoing_flight_id(int outgoing_flight_id) {
-        this.outgoing_flight_id = outgoing_flight_id;
+    public void setTraveler_type(String traveler_type) {
+        this.traveler_type = traveler_type;
     }
 
-    public String getReturning_flight_type() {
-        return returning_flight_type;
+    public String getTraveler_name() {
+        return traveler_name;
     }
 
-    public void setReturning_flight_type(String returning_flight_type) {
-        this.returning_flight_type = returning_flight_type;
+    public void setTraveler_name(String traveler_name) {
+        this.traveler_name = traveler_name;
     }
 
-    public int getReturning_flight_id() {
-        return returning_flight_id;
+    public String getSeat_id() {
+        return seat_id;
     }
 
-    public void setReturning_flight_id(int returning_flight_id) {
-        this.returning_flight_id = returning_flight_id;
+    public void setSeat_id(String seat_id) {
+        this.seat_id = seat_id;
+    }
+
+    public String getSeat_type() {
+        return seat_type;
+    }
+
+    public void setSeat_type(String seat_type) {
+        this.seat_type = seat_type;
     }
 
     public double getPrice() {

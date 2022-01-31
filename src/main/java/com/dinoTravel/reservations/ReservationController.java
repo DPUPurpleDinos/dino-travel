@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Handles exceptions that get thrown by the ReservationController
+ * Handles ReservationNotFoundExceptions thrown by the controller
  */
 @ControllerAdvice
 class ReservationNotFoundAdvice {
@@ -28,6 +28,23 @@ class ReservationNotFoundAdvice {
     @ExceptionHandler(ReservationNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String reservationNotFoundHandler(ReservationNotFoundException ex) { return ex.getMessage(); }
+}
+
+/**
+ * Handles TooManyReservationExceptions thrown by the controller
+ */
+@ControllerAdvice
+class TooManyReservationsAdvice {
+
+    /**
+     * Generate a 422 status if too many reservations are requested to be added
+     * @param ex TooManyReservationsException
+     * @return Error message notifying user about the reservation limit
+     */
+    @ResponseBody
+    @ExceptionHandler(TooManyReservationsException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    String tooManyReservationsHandler(TooManyReservationsException ex) { return ex.getMessage(); }
 }
 
 @RestController
@@ -132,6 +149,13 @@ public class ReservationController {
      */
     @PostMapping("/multi")
     CollectionModel<EntityModel<Reservation>> createReservations(@RequestBody Reservation [] reservations) {
+
+        // Throw an exception if the amount of reservations exceeds the limit
+        int limit = 50;
+        if (reservations.length > limit) {
+            throw new TooManyReservationsException(limit);
+        }
+
         for (Reservation res : reservations) {
             reservationAssembler.toModel(reservationRepository.save(res));
         }

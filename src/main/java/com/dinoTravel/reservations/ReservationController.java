@@ -151,7 +151,7 @@ public class ReservationController {
     CollectionModel<EntityModel<Reservation>> createReservations(@RequestBody Reservation [] reservations) {
 
         // Throw an exception if the amount of reservations exceeds the limit
-        int limit = 25;
+        int limit = 50;
         if (reservations.length > limit) {
             throw new TooManyReservationsException(limit);
         }

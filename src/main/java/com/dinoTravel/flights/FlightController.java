@@ -89,7 +89,7 @@ public class FlightController {
     ResponseEntity<?> updateFlight(@RequestBody Flight flight, @PathVariable("id") int flightId) {
         Flight existingFlight = flightRepository.findById(flightId)
             .map(newFlight -> {
-                newFlight.setSeats_available(flight.getSeats_available());
+                newFlight.setFlight_code(flight.getFlight_code());
                 newFlight.setFlight_provider(flight.getFlight_provider());
                 newFlight.setDeparture_airport(flight.getDeparture_airport());
                 newFlight.setDeparture_time(flight.getDeparture_time());

@@ -14,8 +14,11 @@ public class MyConfiguration {
   public FilterRegistrationBean corsFilter() {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
-    config.addAllowedOrigin("https://daniel-mccarthy.github.io");
+    //set allow credentials to true
+    config.setAllowCredentials(false);
+    //Removed CORS Policy to make dev on frontend easier
+    //like to the frontend page https://daniel-mccarthy.github.io
+    config.addAllowedOrigin("*");
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);

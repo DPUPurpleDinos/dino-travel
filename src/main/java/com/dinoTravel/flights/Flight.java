@@ -75,7 +75,7 @@ public class Flight {
         return flight_code;
     }
 
-    public void setFlight_code(String flight_number) {
+    public void setFlight_code(String flight_code) {
         this.flight_code = flight_code;
     }
 

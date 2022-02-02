@@ -19,8 +19,8 @@ public class Flight {
     // the flight_id will not need to be set since it is auto generated
     public int flight_id;
 
-    @Column(name = "seats_available")
-    public int seats_available;
+    @Column(name = "flight_code")
+    public String flight_code;
 
     @Column(name = "flight_provider")
     public String flight_provider;
@@ -39,15 +39,15 @@ public class Flight {
 
     /**
      * The constructor to create Flight objects
-     * @param seats_available Number of seats left that are able to be booked
+     * @param flight_code The code that an airline assigns to a flight (ex: DL1234)
      * @param flight_provider The name of the airline providing the flight(s)
      * @param departure_airport The airport code for the departure airport
      * @param departure_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to depart
      * @param arrival_airport The airport code for the arrival airport
      * @param arrival_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to land
      */
-    public Flight(int seats_available, String flight_provider, String departure_airport, String departure_time, String arrival_airport, String arrival_time) {
-        setSeats_available(seats_available);
+    public Flight(String flight_code, String flight_provider, String departure_airport, String departure_time, String arrival_airport, String arrival_time) {
+        setFlight_code(flight_code);
         setFlight_provider(flight_provider);
         setDeparture_airport(departure_airport);
         setDeparture_time(departure_time);
@@ -71,12 +71,12 @@ public class Flight {
         this.flight_id = flight_id;
     }
 
-    public int getSeats_available() {
-        return seats_available;
+    public String getFlight_code() {
+        return flight_code;
     }
 
-    public void setSeats_available(int seats_available) {
-        this.seats_available = seats_available;
+    public void setFlight_code(String flight_code) {
+        this.flight_code = flight_code;
     }
 
     public String getFlight_provider() {

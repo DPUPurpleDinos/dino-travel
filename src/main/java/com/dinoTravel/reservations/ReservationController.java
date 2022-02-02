@@ -100,6 +100,20 @@ public class ReservationController {
     }
 
     /**
+     * Return all reservations created by a specific user
+     * @param id The ID of a user
+     * @return A collection of Reservations and their bodies as an EntityModel
+     */
+    @GetMapping("/user")
+    CollectionModel<EntityModel<Reservation>> getReservationsByUserId(@RequestParam int id) {
+        List<EntityModel<Reservation>> reservations = reservationRepository.findByUserId(id).stream()
+            .map(reservationAssembler::toModel)
+            .collect(Collectors.toList());
+
+        return CollectionModel.of(reservations);
+    }
+
+    /**
      * Update an existing reservation already contained in the ReservationRepository
      * Otherwise save it to the ReservationRepository
      * @param reservation The body of the reservation

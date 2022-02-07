@@ -1,5 +1,8 @@
 package com.dinoTravel.users;
 
+import com.dinoTravel.TokenVerifier;
+import com.dinoTravel.TokenVerifierResponse;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -68,8 +71,27 @@ public class UserController {
      * @param userId the ID for the user
      * @return The body of the user as an EntityModel
      */
+    @GetMapping("/auth/{id}")
+    EntityModel<User> getAuthUser(@PathVariable ("id") int userId, @RequestHeader("Authorization") String auth) {
+        System.out.println(auth);
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        System.out.println(response.isValid());
+        if (response.isValid()) {
+            User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+            return userAssembler.toModel(user);
+        }else{
+            throw new UserNotFoundException(userId);
+        }
+    }
+
+    /**
+     * Return the body for a single user
+     * @param userId the ID for the user
+     * @return The body of the user as an EntityModel
+     */
     @GetMapping("/{id}")
     EntityModel<User> getUserById(@PathVariable ("id") int userId) {
+
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         return userAssembler.toModel(user);

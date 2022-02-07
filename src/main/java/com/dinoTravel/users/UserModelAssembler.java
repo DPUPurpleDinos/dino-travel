@@ -23,4 +23,5 @@ public class UserModelAssembler implements RepresentationModelAssembler<User, En
         return EntityModel.of(user,
                 linkTo(methodOn(UserController.class).getUserById(user.getUser_id())).withSelfRel());
     }
+
 }

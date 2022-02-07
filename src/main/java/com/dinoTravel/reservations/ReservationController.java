@@ -186,7 +186,7 @@ public class ReservationController {
      * @param reservationId The ID for a reservation to delete
      * @return An empty body as a ResponseEntity
      */
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteReservation(@PathVariable ("id") int reservationId) {
         reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
 

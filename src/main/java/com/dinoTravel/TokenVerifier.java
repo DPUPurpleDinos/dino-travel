@@ -15,18 +15,13 @@ public class TokenVerifier {
       .setAudience(Collections.singleton("1042234633479-gpprc2adcpltfjnaij7gib55ko91441n.apps.googleusercontent.com"))
       .build();
 
-  public static boolean verifyToken(String tokenString) throws GeneralSecurityException, IOException {
+  public static TokenVerifierResponse verifyToken(String  tokenString) throws GeneralSecurityException, IOException {
     GoogleIdToken idToken = verifier.verify(tokenString);
     if (idToken != null) {
-      //could return payload if needed. Probably will need it but for
-      //now just authenticate
       Payload payload = idToken.getPayload();
-      System.out.println("Email: " + payload.getEmail());
-      System.out.println("Domain: " + payload.getEmail());
-      System.out.println("Location: " + payload.get("locale"));
-      return true;
+      return new TokenVerifierResponse(idToken.getPayload(), true);
     }else{
-      return false;
+      return new TokenVerifierResponse(null, true);
     }
   }
 }

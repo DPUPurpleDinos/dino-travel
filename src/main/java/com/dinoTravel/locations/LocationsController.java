@@ -5,6 +5,8 @@ import com.amadeus.exceptions.ResponseException;
 import com.amadeus.referenceData.Locations;
 import com.dinoTravel.Amadeus;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,9 @@ public class LocationsController {
 
   @GetMapping
   public String locations(@RequestParam() String keyword) throws ResponseException {
+    if (keyword == ""){
+      return "[]";
+    }
     Params p = Params.with("keyword", keyword);
     p.and("subType", Locations.ANY);
     p.and("page[limit]", 100);

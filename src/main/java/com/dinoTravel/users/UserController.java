@@ -1,26 +1,20 @@
 package com.dinoTravel.users;
 
+import com.dinoTravel.TokenInvalid;
 import com.dinoTravel.TokenVerifier;
 import com.dinoTravel.TokenVerifierResponse;
-import java.util.Map;
-import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handles exceptions that get thrown by the UserController
  */
 @ControllerAdvice
-class UserNotFoundAdvice {
+class UserExceptionController {
 
     /**
      * Generate a 404 status if a requested ID is not not found
@@ -32,6 +26,17 @@ class UserNotFoundAdvice {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String userNotFoundHandler(UserNotFoundException ex) { return ex.getMessage(); }
+
+    @ResponseBody
+    @ExceptionHandler(TokenInvalid.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    String userNotAuthorized(TokenInvalid ex) { return ex.getMessage();}
+
+    @ResponseBody
+    @ExceptionHandler(UserExistsException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    String userExists(UserExistsException ex) {return ex.getMessage();}
+
 }
 
 /**
@@ -56,47 +61,16 @@ public class UserController {
     }
 
     /**
-     * Returns all Users saved in the UserRepository
+     * Returns the user with the provided token
      * @return A collection of Users and their bodies represented as an EntityModel
      */
     @GetMapping()
-    CollectionModel<EntityModel<User>> getAllUsers() {
-        List<EntityModel<User>> users = userRepository.findAll().stream()
-            .map(userAssembler::toModel)
-            .collect(Collectors.toList());
+    EntityModel<User> getUser(@RequestHeader("Authorization") String auth) {
+        TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
+        User currentUser = userRepository.findById(Response.getSubject())
+            .orElseThrow(UserNotFoundException::new);
 
-        return CollectionModel.of(users);
-    }
-
-    /**
-     * Return the body for a single user
-     * @param userId the ID for the user
-     * @return The body of the user as an EntityModel
-     */
-    @GetMapping("/auth/{id}")
-    EntityModel<User> getAuthUser(@PathVariable ("id") int userId, @RequestHeader(value="Authorization", required = true) String auth) {
-        System.out.println(auth);
-        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
-        System.out.println(response.isValid());
-        if (response.isValid()) {
-            User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-            return userAssembler.toModel(user);
-        }else{
-            throw new UserNotFoundException(userId);
-        }
-    }
-
-    /**
-     * Return the body for a single user
-     * @param userId the ID for the user
-     * @return The body of the user as an EntityModel
-     */
-    @GetMapping("/{id}")
-    EntityModel<User> getUserById(@PathVariable ("id") int userId) {
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-
-        return userAssembler.toModel(user);
+        return userAssembler.toModel(currentUser);
     }
 
     /**
@@ -105,7 +79,7 @@ public class UserController {
      * @param user The body of the user
      * @param userId The ID for an existing user
      * @return The body of the updated user as a ResponseEntity
-     */
+
     @PutMapping("/{id}")
     ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable ("id") int userId) {
         User existingUser = userRepository.findById(userId)
@@ -116,7 +90,7 @@ public class UserController {
                 newUser.setEmail(user.getEmail());
                 return userRepository.save(newUser);
             }).orElseGet(() -> {
-                user.setUser_id(userId);
+                user.setSubject_id(userId);
                 return userRepository.save(user);
             });
         EntityModel<User> entityModel = userAssembler.toModel(existingUser);
@@ -124,31 +98,37 @@ public class UserController {
         return ResponseEntity
             .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
             .body(entityModel);
-    }
+    }*/
 
     /**
-     * Create a new user to be added to the UserRepository
-     * @param user The body of the user
-     * @return The body of the created user as a ResponseEntity
+     *
+     * @param auth
+     * @return
      */
     @PostMapping
-    ResponseEntity<?> createUser(@RequestBody User user) {
-        EntityModel<User> entityModel = userAssembler.toModel(userRepository.save(user));
+    ResponseEntity<?> createUser(@RequestBody User user, @RequestHeader("Authorization") String auth) {
+        TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
+        if (userRepository.existsById(Response.getSubject())){
+            throw new UserExistsException();
+        }
 
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
+        user.setSubject_id(Response.getSubject());
+        userRepository.save(user);
+
+        return ResponseEntity.ok("User Created");
     }
 
     /**
      * Delete a user from the UserRepository
      * @param userId The ID for a user to delete
      * @return An empty body as a ResponseEntity
-     */
+
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteUser(@PathVariable ("id") int userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         userRepository.deleteById(userId);
 
         return ResponseEntity.noContent().build();
-    }
+    } */
 }

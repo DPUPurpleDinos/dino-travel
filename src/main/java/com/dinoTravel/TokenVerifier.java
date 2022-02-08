@@ -23,22 +23,23 @@ public class TokenVerifier {
       .build();
 
   /***
-   * Verifies any oauth token it is given
-   * @param tokenString the token string
-   * @return A object that tells if the string was valid and if it is returns a payload with is as well
+   * Class for verifying if a token is valid
+   * @param tokenString the token string to verify
+   * @return Token Verifier Response. Returned if valid
+   * @throws TokenInvalid Error thrown if the token is invalid
    */
-  public static TokenVerifierResponse verifyToken(String tokenString){
+  public static TokenVerifierResponse verifyToken(String tokenString) throws TokenInvalid{
     GoogleIdToken idToken = null;
     try {
       idToken = verifier.verify(tokenString);
     } catch (GeneralSecurityException | IOException e) {
-      System.out.println(e.getMessage());
+      System.out.println("bad");
+      throw new TokenInvalid(e.getMessage());
     }
     if (idToken != null) {
-      Payload payload = idToken.getPayload();
       return new TokenVerifierResponse(idToken.getPayload(), true);
     }else{
-      return new TokenVerifierResponse(null, false);
+      throw new TokenInvalid("Token Expired");
     }
   }
 }

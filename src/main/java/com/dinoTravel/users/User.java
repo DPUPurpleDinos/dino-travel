@@ -12,10 +12,9 @@ import javax.persistence.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "user_id")
-    // the user_id will not need to be set since it is auto generated
-    public int user_id;
+    @Column(name = "subjectID")
+    // the subject_id will need to be set since it is not auto generated
+    public String subject_id;
 
     @Column(name = "first_name")
     public String first_name;
@@ -51,12 +50,12 @@ public class User {
 
     // Getters and setters
 
-    public int getUser_id() {
-        return user_id;
+    public String getSubject_id() {
+        return subject_id;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setSubject_id(String subject_id) {
+        this.subject_id = subject_id;
     }
 
     public String getFirst_name() {

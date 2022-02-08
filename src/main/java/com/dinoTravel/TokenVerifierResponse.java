@@ -18,4 +18,9 @@ public class TokenVerifierResponse {
   public boolean isValid() {
     return validity;
   }
+
+  public String getSubject() {
+    return payload.getSubject();
+  }
+
 }

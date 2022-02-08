@@ -15,23 +15,32 @@ import org.springframework.web.bind.annotation.*;
  */
 @ControllerAdvice
 class UserExceptionController {
-
     /**
      * Generate a 404 status if a requested ID is not not found
      * and returns an error message as a String
-     * @Param ex UserNotFoundException
-     * @Return Error message containing the user ID that caused the exception
+     * @param ex serNotFoundException
+     * @return Error message containing the user ID that caused the exception
      */
     @ResponseBody
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String userNotFoundHandler(UserNotFoundException ex) { return ex.getMessage(); }
 
+    /**
+     * generates a 401 error if user auth is wrong
+     * @param ex TokenInvalid Exception
+     * @return Error message saying the token is invalid
+     */
     @ResponseBody
     @ExceptionHandler(TokenInvalid.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     String userNotAuthorized(TokenInvalid ex) { return ex.getMessage();}
 
+    /**
+     * generates a 406 error if user already exists
+     * @param ex UserExistsException
+     * @return error message
+     */
     @ResponseBody
     @ExceptionHandler(UserExistsException.class)
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
@@ -73,16 +82,18 @@ public class UserController {
         return userAssembler.toModel(currentUser);
     }
 
-    /**
-     * Update an existing user already contained in the UserRepository
-     * Otherwise save it to the UserRepository
-     * @param user The body of the user
-     * @param userId The ID for an existing user
-     * @return The body of the updated user as a ResponseEntity
 
-    @PutMapping("/{id}")
-    ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable ("id") int userId) {
-        User existingUser = userRepository.findById(userId)
+    /**
+     * Updates a given users info
+     * @param user the new user info
+     * @param auth the authentication token
+     * @return status of 200
+     */
+    @PutMapping()
+    ResponseEntity<?> updateUser(@RequestBody User user, @RequestHeader("Authorization") String auth) {
+        TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
+
+        User existingUser = userRepository.findById(Response.getSubject())
             .map(newUser -> {
                 newUser.setFirst_name(user.getFirst_name());
                 newUser.setLast_name(user.getLast_name());
@@ -90,20 +101,17 @@ public class UserController {
                 newUser.setEmail(user.getEmail());
                 return userRepository.save(newUser);
             }).orElseGet(() -> {
-                user.setSubject_id(userId);
+                user.setSubject_id(Response.getSubject());
                 return userRepository.save(user);
             });
-        EntityModel<User> entityModel = userAssembler.toModel(existingUser);
-
-        return ResponseEntity
-            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-            .body(entityModel);
-    }*/
+        return ResponseEntity.ok("User updated");
+    }
 
     /**
-     *
-     * @param auth
-     * @return
+     * Create a new user
+     * @param user the info of the user to be made
+     * @param auth the auth token
+     * @return status 200
      */
     @PostMapping
     ResponseEntity<?> createUser(@RequestBody User user, @RequestHeader("Authorization") String auth) {

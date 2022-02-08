@@ -129,6 +129,7 @@ public class ReservationController {
                 newReservation.setFlight_id(reservation.getFlight_id());
                 newReservation.setTraveler_type(reservation.getTraveler_type());
                 newReservation.setTraveler_name(reservation.getTraveler_name());
+                newReservation.setNum_checked_bags(reservation.getNum_checked_bags());
                 newReservation.setSeat_id(reservation.getSeat_id());
                 newReservation.setSeat_type(reservation.getSeat_type());
                 newReservation.setPrice(reservation.getPrice());

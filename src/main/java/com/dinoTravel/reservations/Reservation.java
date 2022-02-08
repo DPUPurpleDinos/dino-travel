@@ -37,6 +37,9 @@ public class Reservation {
     @Column(name = "traveler_name")
     public String traveler_name;
 
+    @Column(name = "num_checked_bags")
+    public int num_checked_bags;
+
     // ID is saved as a String to use the seat's natural key (ex: "27A")
     @Column(name = "seat_id")
     public String seat_id;
@@ -54,17 +57,19 @@ public class Reservation {
      * @param flight_id The ID of the flight. Relates to a flight in the Flights table
      * @param traveler_type ADULT, CHILD
      * @param traveler_name The name of the traveler reserving the seat
+     * @param num_checked_bags The number of checked bags a user
      * @param seat_id The ID of the seat
      * @param seat_type FIRST_CLASS, ECONOMY, BUSINESS
      * @param price The price of the reserved seat
      */
     public Reservation(int user_id, String trip_type, int flight_id, String traveler_type,
-           String traveler_name, String seat_id, String seat_type, double price) {
+           String traveler_name, int num_checked_bags, String seat_id, String seat_type, double price) {
         setUser_id(user_id);
         setTrip_type(trip_type);
         setFlight_id(flight_id);
         setTraveler_type(traveler_type);
         setTraveler_name(traveler_name);
+        setNum_checked_bags(num_checked_bags);
         setSeat_id(seat_id);
         setSeat_type(seat_type);
         setPrice(price);
@@ -148,4 +153,8 @@ public class Reservation {
     public void setPrice(double price) {
         this.price = price;
     }
+
+    public int getNum_checked_bags() { return num_checked_bags; }
+
+    public void setNum_checked_bags(int num_checked_bags) { this.num_checked_bags = num_checked_bags; }
 }

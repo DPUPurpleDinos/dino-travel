@@ -3,13 +3,9 @@ package com.dinoTravel.users;
 import com.dinoTravel.TokenInvalid;
 import com.dinoTravel.TokenVerifier;
 import com.dinoTravel.TokenVerifierResponse;
-import com.dinoTravel.users.exceptions.UserExistsException;
-import com.dinoTravel.users.exceptions.UserFieldCanNotBeNullException;
-import com.dinoTravel.users.exceptions.UserNotFoundException;
-import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
+import com.dinoTravel.users.exceptions.*;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,11 +46,21 @@ class UserExceptionController {
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     String userExists(UserExistsException ex) {return ex.getMessage();}
 
+    /**
+     * generates 400 error on null field
+     * @param ex UserFieldCanNotBeNullException
+     * @return message
+     */
     @ResponseBody
     @ExceptionHandler(UserFieldCanNotBeNullException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     String userFieldCanNotBeNull(UserFieldCanNotBeNullException ex) {return ex.getMessage();}
 
+    /**
+     * generates 400 error on invalid field
+     * @param ex UserVariableIsNotValidException
+     * @return message
+     */
     @ResponseBody
     @ExceptionHandler(UserVariableIsNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -84,15 +90,15 @@ public class UserController {
 
     /**
      * Returns the user with the provided token
-     * @return A collection of Users and their bodies represented as an EntityModel
+     * @return the user requested
      */
     @GetMapping()
-    EntityModel<User> getUser(@RequestHeader("Authorization") String auth) {
+    UserRequest getUser(@RequestHeader("Authorization") String auth) {
         TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
         User currentUser = userRepository.findById(Response.getSubject())
             .orElseThrow(UserNotFoundException::new);
 
-        return userAssembler.toModel(currentUser);
+        return new UserRequest(currentUser);
     }
 
 
@@ -101,7 +107,7 @@ public class UserController {
      * If user not found throw an error
      * @param changes the map of the provides fields to change
      * @param auth the authentication token
-     * @return status of 200
+     * @return the User with new data without subject id
      */
     @PutMapping()
     UserRequest updateUser(@RequestBody Map<String, String> changes, @RequestHeader("Authorization") String auth) {
@@ -120,7 +126,7 @@ public class UserController {
      * Create a new user with the given info in the request
      * @param userRequest the info of the user to be made
      * @param auth the auth token
-     * @return the
+     * @return the new user made without subjectID or an error if it failed
      */
     @PostMapping
     UserRequest createUser(@RequestBody UserRequest userRequest, @RequestHeader("Authorization") String auth) {

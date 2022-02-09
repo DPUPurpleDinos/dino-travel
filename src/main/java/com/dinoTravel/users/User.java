@@ -1,9 +1,7 @@
 package com.dinoTravel.users;
 import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import lombok.Data;
 import javax.persistence.*;
 
 /**
@@ -51,6 +49,11 @@ public class User {
         setDob(userRequest.dob);
     }
 
+    /**
+     * A map of all changes we can make if a request is not part of it throw an error
+     * @param changes the variable to change with it value
+     * @throws UserVariableIsNotValidException Thrown if the user variable is not present
+     */
     public void update(Map<String, String> changes) throws UserVariableIsNotValidException{
         Map<String, Consumer<String>> mutable = Map.of(
             "first_name", this::setFirst_name,

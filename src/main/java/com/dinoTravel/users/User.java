@@ -1,4 +1,8 @@
 package com.dinoTravel.users;
+import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import lombok.Data;
 import javax.persistence.*;
 
@@ -6,7 +10,6 @@ import javax.persistence.*;
  * A representation of a user that allows values
  * to be mapped to keys in a relational database
  */
-@Data
 @Entity
 @Table(name = "users")
 public class User {
@@ -14,7 +17,7 @@ public class User {
     @Id
     @Column(name = "subjectID")
     // the subject_id will need to be set since it is not auto generated
-    public String subject_id;
+    private String subject_id;
 
     @Column(name = "first_name")
     public String first_name;
@@ -29,33 +32,46 @@ public class User {
     public String dob;
 
     /**
-     * The constructor to create User objects
-     * @param first_name First name of the user
-     * @param last_name Last name of the user
-     * @param email The user's email address
-     * @param dob The date (YYYY-MM-DD) the user was born
+     * default constructor
      */
-    public User(String first_name, String last_name, String email, String dob) {
-        setFirst_name(first_name);
-        setLast_name(last_name);
-        setEmail(email);
-        setDob(dob);
+    public User() {
     }
 
     /**
-     * Default constructor
+     * Constructor for a User, make a user form a userRequest
+     * and assign it the appropriate subject ID
+     * @param SubjectID the subject ID of the user
+     * @param userRequest the info from the user request
      */
-    public User() {}
+    public User(String SubjectID, UserRequest userRequest){
+        this.subject_id = SubjectID;
+        setFirst_name(userRequest.first_name);
+        setLast_name(userRequest.last_name);
+        setEmail(userRequest.email);
+        setDob(userRequest.dob);
+    }
 
+    public void update(Map<String, String> changes) throws UserVariableIsNotValidException{
+        Map<String, Consumer<String>> mutable = Map.of(
+            "first_name", this::setFirst_name,
+            "last_name", this::setLast_name,
+            "email", this::setEmail,
+            "dob", this::setDob
+        );
+
+        for(Map.Entry<String, String> pair : changes.entrySet()){
+            if (mutable.containsKey(pair.getKey())) {
+                mutable.get(pair.getKey()).accept(pair.getValue());
+            }else{
+                throw new UserVariableIsNotValidException(pair.getKey());
+            }
+        }
+    }
 
     // Getters and setters
 
     public String getSubject_id() {
         return subject_id;
-    }
-
-    public void setSubject_id(String subject_id) {
-        this.subject_id = subject_id;
     }
 
     public String getFirst_name() {
@@ -89,4 +105,6 @@ public class User {
     public void setDob(String dob) {
         this.dob = dob;
     }
+
+
 }

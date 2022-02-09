@@ -19,7 +19,7 @@ public class TokenVerifierTests {
     }catch (IOException e){
       e.printStackTrace();
     }
-    //set the key and secretKey
+    //set valid and invalid
     ValidToken = properties.getProperty("ValidToken");
     InValidToken = properties.getProperty("InValidToken");
   }

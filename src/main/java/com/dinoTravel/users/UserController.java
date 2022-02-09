@@ -3,9 +3,13 @@ package com.dinoTravel.users;
 import com.dinoTravel.TokenInvalid;
 import com.dinoTravel.TokenVerifier;
 import com.dinoTravel.TokenVerifierResponse;
+import com.dinoTravel.users.exceptions.UserExistsException;
+import com.dinoTravel.users.exceptions.UserFieldCanNotBeNullException;
+import com.dinoTravel.users.exceptions.UserNotFoundException;
+import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +50,15 @@ class UserExceptionController {
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     String userExists(UserExistsException ex) {return ex.getMessage();}
 
+    @ResponseBody
+    @ExceptionHandler(UserFieldCanNotBeNullException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    String userFieldCanNotBeNull(UserFieldCanNotBeNullException ex) {return ex.getMessage();}
+
+    @ResponseBody
+    @ExceptionHandler(UserVariableIsNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    String userFieldInValid(UserVariableIsNotValidException ex) {return ex.getMessage();}
 }
 
 /**
@@ -84,59 +97,58 @@ public class UserController {
 
 
     /**
-     * Updates a given users info
-     * @param user the new user info
+     * Updates a given users info, provide any info to be changed
+     * If user not found throw an error
+     * @param changes the map of the provides fields to change
      * @param auth the authentication token
      * @return status of 200
      */
     @PutMapping()
-    ResponseEntity<?> updateUser(@RequestBody User user, @RequestHeader("Authorization") String auth) {
+    UserRequest updateUser(@RequestBody Map<String, String> changes, @RequestHeader("Authorization") String auth) {
         TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
 
-        User existingUser = userRepository.findById(Response.getSubject())
-            .map(newUser -> {
-                newUser.setFirst_name(user.getFirst_name());
-                newUser.setLast_name(user.getLast_name());
-                newUser.setDob(user.getDob());
-                newUser.setEmail(user.getEmail());
-                return userRepository.save(newUser);
-            }).orElseGet(() -> {
-                user.setSubject_id(Response.getSubject());
-                return userRepository.save(user);
-            });
-        return ResponseEntity.ok("User updated");
+        User existingUser = userRepository.findById(Response.getSubject()).orElseThrow(UserNotFoundException::new);
+
+        existingUser.update(changes);
+
+        userRepository.save(existingUser);
+
+        return new UserRequest(existingUser);
     }
 
     /**
-     * Create a new user
-     * @param user the info of the user to be made
+     * Create a new user with the given info in the request
+     * @param userRequest the info of the user to be made
      * @param auth the auth token
-     * @return status 200
+     * @return the
      */
     @PostMapping
-    ResponseEntity<?> createUser(@RequestBody User user, @RequestHeader("Authorization") String auth) {
+    UserRequest createUser(@RequestBody UserRequest userRequest, @RequestHeader("Authorization") String auth) {
         TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
         if (userRepository.existsById(Response.getSubject())){
             throw new UserExistsException();
+        }else {
+            User user = new User(Response.getSubject(), userRequest);
+            userRepository.save(user);
+            return userRequest;
         }
-
-        user.setSubject_id(Response.getSubject());
-        userRepository.save(user);
-
-        return ResponseEntity.ok("User Created");
     }
 
     /**
      * Delete a user from the UserRepository
-     * @param userId The ID for a user to delete
-     * @return An empty body as a ResponseEntity
+     * I am hesitant to put this in
+     * 1 this will have to cause knock on effects in the database
+     * 2 this is very powerful have to be careful with this one
+     * @param auth The auth string
+     * @return status code 200
+     */
+    @DeleteMapping
+    ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String auth) {
+        TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
+        userRepository.findById(Response.getSubject()).orElseThrow(UserNotFoundException::new);
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteUser(@PathVariable ("id") int userId) {
-        userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        userRepository.deleteById(Response.getSubject());
 
-        userRepository.deleteById(userId);
-
-        return ResponseEntity.noContent().build();
-    } */
+        return ResponseEntity.ok("User Deleted");
+    }
 }

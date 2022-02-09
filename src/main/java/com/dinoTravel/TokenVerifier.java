@@ -1,11 +1,9 @@
 package com.dinoTravel;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.common.io.BaseEncoding;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
@@ -23,19 +21,29 @@ public class TokenVerifier {
       .build();
 
   /***
-   * Class for verifying if a token is valid
+   * Class for verifying if a given token string is valid
    * @param tokenString the token string to verify
    * @return Token Verifier Response. Returned if valid
    * @throws TokenInvalid Error thrown if the token is invalid
    */
   public static TokenVerifierResponse verifyToken(String tokenString) throws TokenInvalid{
-    GoogleIdToken idToken = null;
+    GoogleIdToken idToken;
+    //Try to verify the token return a null or token if no exceptions
+    //occur
     try {
       idToken = verifier.verify(tokenString);
+      //have to catch this general exceptions for the verifier
     } catch (GeneralSecurityException | IOException e) {
-      System.out.println("bad");
-      throw new TokenInvalid(e.getMessage());
+      throw new TokenInvalid("A general google exception occurred reason: " + e.getMessage());
+      //thrown if the token is too short or too long
+    } catch (IllegalArgumentException e){
+      throw new TokenInvalid("Invalid Input Length reason: " + e.getMessage());
+      //catch any other exceptions
+    } catch (Exception e){
+      throw new TokenInvalid("An exception occurred reason:" + e.getMessage());
     }
+    //Check if the token is not null if, if it is not everything is good
+    //else it probably expired
     if (idToken != null) {
       return new TokenVerifierResponse(idToken.getPayload(), true);
     }else{

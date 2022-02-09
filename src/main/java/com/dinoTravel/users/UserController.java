@@ -56,7 +56,7 @@ class UserExceptionController {
 public class UserController {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final UserModelAssembler userAssembler;
 
     /**

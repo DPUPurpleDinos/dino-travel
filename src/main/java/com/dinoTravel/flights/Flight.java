@@ -1,5 +1,6 @@
 package com.dinoTravel.flights;
 
+import com.dinoTravel.reservations.flightRequest;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -8,7 +9,7 @@ import javax.persistence.*;
  * A representation of a flight that allows values
  * to be mapped to keys in a relational database
  */
-@Data
+
 @Entity
 @Table(name = "flights")
 public class Flight {
@@ -54,6 +55,7 @@ public class Flight {
         setArrival_airport(arrival_airport);
         setArrival_time(arrival_time);
     }
+
 
     /**
      * Default constructor

@@ -1,9 +1,19 @@
 package com.dinoTravel.reservations;
 
+import com.dinoTravel.TokenVerifier;
+import com.dinoTravel.TokenVerifierResponse;
+import com.dinoTravel.flights.Flight;
+import com.dinoTravel.flights.FlightRepository;
+import com.dinoTravel.reservations.exceptions.InvalidCredentials;
+import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
+import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
+import java.math.BigInteger;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +26,7 @@ import java.util.stream.Collectors;
  * Handles ReservationNotFoundExceptions thrown by the controller
  */
 @ControllerAdvice
-class ReservationNotFoundAdvice {
-
+class ReservationErrorHandler {
     /**
      * Generate a 404 status is a requested ID is not found
      * and return an error message as a String
@@ -28,13 +37,6 @@ class ReservationNotFoundAdvice {
     @ExceptionHandler(ReservationNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String reservationNotFoundHandler(ReservationNotFoundException ex) { return ex.getMessage(); }
-}
-
-/**
- * Handles TooManyReservationExceptions thrown by the controller
- */
-@ControllerAdvice
-class TooManyReservationsAdvice {
 
     /**
      * Generate a 422 status if too many reservations are requested to be added
@@ -45,6 +47,11 @@ class TooManyReservationsAdvice {
     @ExceptionHandler(TooManyReservationsException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     String tooManyReservationsHandler(TooManyReservationsException ex) { return ex.getMessage(); }
+
+    @ResponseBody
+    @ExceptionHandler(InvalidCredentials.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    String invalidCredentials(InvalidCredentials ex) {return ex.getMessage();}
 }
 
 @RestController
@@ -54,43 +61,66 @@ public class ReservationController {
     @Autowired
     private final ReservationRepository reservationRepository;
     private final ReservationModelAssembler reservationAssembler;
+    private final FlightRepository flightRepository;
 
     /**
      * Constructor to create a RestController for Reservation objects
      * @param repository Repository to save Reservation objects
      * @param assembler Assembler to create the JSON response
+     * @param flightRepository Repository to save flights
      */
-    ReservationController(ReservationRepository repository, ReservationModelAssembler assembler) {
+    ReservationController(ReservationRepository repository, ReservationModelAssembler assembler,
+        FlightRepository flightRepository) {
         this.reservationRepository = repository;
         this.reservationAssembler = assembler;
+        this.flightRepository = flightRepository;
     }
 
-    /**
-     * Returns all Reservations saved in the ReservationRepository
-     * @return A collection of Reservations and their bodies as an EntityModel
-
-    @GetMapping()
-    CollectionModel<EntityModel<Reservation>> getAllReservations() {
-        List<EntityModel<Reservation>> reservations = reservationRepository.findAll().stream()
-            .map(reservationAssembler::toModel)
-            .collect(Collectors.toList());
-
-        return CollectionModel.of(reservations);
-    }*/
-
-    /**
-     * keeping this in just so that we can show the info we store on the database
-     * after the video delete this it is a security venerability
-     * @return a list of all reservations
-     */
     @GetMapping("/all")
     List<Reservation> getAllReservations(){
         return reservationRepository.findAll();
     }
 
-    void getReservationsByUser(){
-
+    @GetMapping("/user")
+    List<Reservation> getReservationsByUser(@RequestHeader("Authorization") String auth){
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        return reservationRepository.findBySubjectId(response.getSubject());
     }
+
+    @GetMapping("/{id}")
+    Reservation getReservationById(@RequestHeader("Authorization") String auth, @PathVariable ("id") int reservationId) {
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
+        if (!reservation.getSubject_id().equals(response.getSubject())){
+            throw new InvalidCredentials("You are not authorized to view the requested reservation.");
+        }else {
+            return reservation;
+        }
+    }
+
+
+    @PostMapping
+    ReservationRequest createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservation) {
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnorePaths("flight_id");
+        long bookingID = System.currentTimeMillis();
+        for (ReservationRequest request : requestedReservation){
+            for (Flight requestedFlight: request.getFlight_request_info()){
+                Example<Flight> example = Example.of(requestedFlight);
+                List<Flight> p = flightRepository.findAll(example);
+                System.out.println(p.toString());
+                //boolean n = flightRepository.exists(requestedFlight);
+                //int got = flightRepository.existsByInfo(requestedFlight.getDeparture_airport(), requestedFlight.getArrival_airport(), requestedFlight.getDeparture_time(), requestedFlight.getArrival_time(), requestedFlight.getFlight_provider(), requestedFlight.getFlight_code()).intValue();
+                //System.out.println(got);
+                //if (got != 1){
+                //    flightRepository.save(requestedFlight);
+                //}
+            }
+        }
+        System.out.println(Arrays.toString(requestedReservation));
+        return requestedReservation[0];
+    }
+
 
     /**
      * Returns all Reservations saved in the ReservationRepository
@@ -100,32 +130,6 @@ public class ReservationController {
     CollectionModel<EntityModel<Reservation>> getAllReservationsMulti() {
         return getAllReservations();
     }*/
-
-    /**
-     * Return the body for a single reservation
-     * @param reservationId the ID for the reservation
-     * @return The body of the reservation as an EntityModel
-     */
-    @GetMapping("/{id}")
-    EntityModel<Reservation> getReservationById(@PathVariable ("id") int reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
-
-        return reservationAssembler.toModel(reservation);
-    }
-
-    /**
-     * Return all reservations created by a specific user
-     * @param id The ID of a user
-     * @return A collection of Reservations and their bodies as an EntityModel
-     */
-    @GetMapping("/user")
-    CollectionModel<EntityModel<Reservation>> getReservationsByUserId(@RequestParam int id) {
-        List<EntityModel<Reservation>> reservations = reservationRepository.findByUserId(id).stream()
-            .map(reservationAssembler::toModel)
-            .collect(Collectors.toList());
-
-        return CollectionModel.of(reservations);
-    }
 
     /**
      * Update an existing reservation already contained in the ReservationRepository
@@ -158,18 +162,6 @@ public class ReservationController {
             .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
             .body(entityModel);
     }*/
-
-    /**
-     * Create a new reservation to be added to the ReservationRepository
-     * @param reservation The body of the reservation
-     * @return The body of the created reservation as a ResponseEntity
-     */
-    @PostMapping
-    ResponseEntity<?> createReservation(@RequestBody Reservation reservation) {
-        EntityModel<Reservation> entityModel = reservationAssembler.toModel(reservationRepository.save(reservation));
-
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
-    }
 
     /**
      * Bulk add reservations to the ReservationRepository

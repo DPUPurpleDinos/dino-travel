@@ -30,7 +30,7 @@ public class Reservation {
     @Column(name = "price", nullable = false)
     public double price;
 
-    //enum oneway, roundTrip, multiCity
+    //enum ONEWAY, ROUNDTRIP, MULTICITY
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "trip_type", nullable = false)
     public tripType tripType;
@@ -39,7 +39,7 @@ public class Reservation {
     @Column(name = "flight_id", nullable = false)
     public int flight_id;
 
-    //enum adult (12+), child (2-12), infant (2-0)
+    //enum ADULT (12+), CHILD (2-12), INFANT (2-0)
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "traveler_type", nullable = false)
     public travelerType traveler_type;

@@ -8,4 +8,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     @Query(value = "SELECT * FROM reservations WHERE user_id=?1", nativeQuery = true)
     List<Reservation> findByUserId(int user_id);
+
+    @Query(value = "SELECT * FROM auth_reservations WHERE subject_id=?1", nativeQuery = true)
+    List<Reservation> findBySubjectId(String subject_id);
 }

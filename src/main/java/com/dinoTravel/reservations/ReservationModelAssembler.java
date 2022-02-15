@@ -20,7 +20,6 @@ public class ReservationModelAssembler implements RepresentationModelAssembler<R
      */
     @Override
     public EntityModel<Reservation> toModel(Reservation reservation) {
-        return EntityModel.of(reservation,
-                linkTo(methodOn(ReservationController.class).getReservationById(reservation.getReservation_id())).withSelfRel());
+        return EntityModel.of(reservation);
     }
 }

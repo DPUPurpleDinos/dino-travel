@@ -52,7 +52,7 @@ class TooManyReservationsAdvice {
 public class ReservationController {
 
     @Autowired
-    private ReservationRepository reservationRepository;
+    private final ReservationRepository reservationRepository;
     private final ReservationModelAssembler reservationAssembler;
 
     /**
@@ -68,7 +68,7 @@ public class ReservationController {
     /**
      * Returns all Reservations saved in the ReservationRepository
      * @return A collection of Reservations and their bodies as an EntityModel
-     */
+
     @GetMapping()
     CollectionModel<EntityModel<Reservation>> getAllReservations() {
         List<EntityModel<Reservation>> reservations = reservationRepository.findAll().stream()
@@ -76,16 +76,30 @@ public class ReservationController {
             .collect(Collectors.toList());
 
         return CollectionModel.of(reservations);
+    }*/
+
+    /**
+     * keeping this in just so that we can show the info we store on the database
+     * after the video delete this it is a security venerability
+     * @return a list of all reservations
+     */
+    @GetMapping("/all")
+    List<Reservation> getAllReservations(){
+        return reservationRepository.findAll();
+    }
+
+    void getReservationsByUser(){
+
     }
 
     /**
      * Returns all Reservations saved in the ReservationRepository
      * @return A collection of Reservations and their bodies as an EntityModel
-     */
+
     @GetMapping("/multi")
     CollectionModel<EntityModel<Reservation>> getAllReservationsMulti() {
         return getAllReservations();
-    }
+    }*/
 
     /**
      * Return the body for a single reservation
@@ -119,7 +133,7 @@ public class ReservationController {
      * @param reservation The body of the reservation
      * @param reservationId The ID for an existing reservation
      * @return The body of the updated reservation as a ResponseEntity
-     */
+
     @PutMapping("/{id}")
     ResponseEntity<?> updateReservation(@RequestBody Reservation reservation, @PathVariable ("id") int reservationId) {
         Reservation existingReservation = reservationRepository.findById(reservationId)
@@ -143,7 +157,7 @@ public class ReservationController {
         return ResponseEntity
             .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
             .body(entityModel);
-    }
+    }*/
 
     /**
      * Create a new reservation to be added to the ReservationRepository

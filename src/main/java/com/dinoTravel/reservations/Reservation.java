@@ -1,78 +1,80 @@
 package com.dinoTravel.reservations;
 
-import lombok.Data;
-
+import com.dinoTravel.reservations.enums.travelerType;
+import com.dinoTravel.reservations.enums.tripType;
+import com.dinoTravel.travelClass;
 import javax.persistence.*;
 
 /**
  * A representation of a reservation that allows values
  * to be mapped to keys in a relational database
  */
-@Data
 @Entity
-@Table(name = "reservations")
+@Table(name = "auth_reservations")
 public class Reservation {
-
 
     // the reservation_id will not need to be set since it is auto generated
     @Id
     @GeneratedValue
-    @Column(name = "reservation_id")
+    @Column(name = "reservation_id", nullable = false, updatable = false)
     public int reservation_id;
 
-    // Foreign key
-    @Column(name = "user_id")
-    public int user_id;
-
-    @Column(name = "trip_type")
-    public String trip_type;
+    //the id of the booking the reservation is apart of
+    @Column(name = "booking_id", nullable = false, updatable = false)
+    public long booking_id;
 
     // Foreign key
-    @Column(name = "flight_id")
-    public int flight_id;
+    @Column(name = "subject_id", nullable = false, updatable = false)
+    public String subject_id;
 
-    @Column(name = "traveler_type")
-    public String traveler_type;
-
-    @Column(name = "traveler_name")
-    public String traveler_name;
-
-    @Column(name = "num_checked_bags")
-    public int num_checked_bags;
-
-    // ID is saved as a String to use the seat's natural key (ex: "27A")
-    @Column(name = "seat_id")
-    public String seat_id;
-
-    @Column(name = "seat_type")
-    public String seat_type;
-
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     public double price;
 
-    /**
-     * The constructor to create Reservation objects
-     * @param user_id The ID of the user creating the reservation. Relates to a user in the Users table
-     * @param trip_type ONE_WAY, ROUND_TRIP, MULTI_CITY
-     * @param flight_id The ID of the flight. Relates to a flight in the Flights table
-     * @param traveler_type ADULT, CHILD
-     * @param traveler_name The name of the traveler reserving the seat
-     * @param num_checked_bags The number of checked bags a user
-     * @param seat_id The ID of the seat
-     * @param seat_type FIRST_CLASS, ECONOMY, BUSINESS
-     * @param price The price of the reserved seat
-     */
-    public Reservation(int user_id, String trip_type, int flight_id, String traveler_type,
-           String traveler_name, int num_checked_bags, String seat_id, String seat_type, double price) {
-        setUser_id(user_id);
-        setTrip_type(trip_type);
-        setFlight_id(flight_id);
-        setTraveler_type(traveler_type);
-        setTraveler_name(traveler_name);
-        setNum_checked_bags(num_checked_bags);
-        setSeat_id(seat_id);
-        setSeat_type(seat_type);
-        setPrice(price);
+    //enum oneway, roundTrip, multiCity
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "trip_type", nullable = false)
+    public tripType tripType;
+
+    // Foreign key
+    @Column(name = "flight_id", nullable = false)
+    public int flight_id;
+
+    //enum adult (12+), child (2-12), infant (2-0)
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "traveler_type", nullable = false)
+    public travelerType traveler_type;
+
+    //name of the traveler for the ticket
+    @Column(name = "traveler_name", nullable = false)
+    public String traveler_name;
+
+    // ID is saved as a String to use the seat's natural key (ex: "27A")
+    @Column(name = "seat_id", nullable = false)
+    public String seat_id;
+
+    //class of the seat
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "seat_class", nullable = false)
+    public travelClass seat_class;
+
+    @Column(name = "num_checked_bags", nullable = false)
+    public int num_checked_bags;
+
+
+    public Reservation(int reservation_id, long booking_id, String subject_id, double price,
+        tripType trip_Type, int flight_id, travelerType traveler_type, String traveler_name,
+        String seat_id, travelClass seat_class, int num_checked_bags) {
+        this.reservation_id = reservation_id;
+        this.booking_id = booking_id;
+        this.subject_id = subject_id;
+        this.price = price;
+        this.tripType = trip_Type;
+        this.flight_id = flight_id;
+        this.traveler_type = traveler_type;
+        this.traveler_name = traveler_name;
+        this.seat_id = seat_id;
+        this.seat_class = seat_class;
+        this.num_checked_bags = num_checked_bags;
     }
 
     /**
@@ -81,7 +83,6 @@ public class Reservation {
     public Reservation() {}
 
     // Getters and setters
-
     public int getReservation_id() {
         return reservation_id;
     }
@@ -90,20 +91,36 @@ public class Reservation {
         this.reservation_id = reservation_id;
     }
 
-    public int getUser_id() {
-        return user_id;
+    public long getBooking_id() {
+        return booking_id;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setBooking_id(long booking_id) {
+        this.booking_id = booking_id;
     }
 
-    public String getTrip_type() {
-        return trip_type;
+    public String getSubject_id() {
+        return subject_id;
     }
 
-    public void setTrip_type(String trip_type) {
-        this.trip_type = trip_type;
+    public void setSubject_id(String subject_id) {
+        this.subject_id = subject_id;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public com.dinoTravel.reservations.enums.tripType getTripType() {
+        return tripType;
+    }
+
+    public void setTripType(com.dinoTravel.reservations.enums.tripType tripType) {
+        this.tripType = tripType;
     }
 
     public int getFlight_id() {
@@ -114,11 +131,11 @@ public class Reservation {
         this.flight_id = flight_id;
     }
 
-    public String getTraveler_type() {
+    public travelerType getTraveler_type() {
         return traveler_type;
     }
 
-    public void setTraveler_type(String traveler_type) {
+    public void setTraveler_type(travelerType traveler_type) {
         this.traveler_type = traveler_type;
     }
 
@@ -138,23 +155,19 @@ public class Reservation {
         this.seat_id = seat_id;
     }
 
-    public String getSeat_type() {
-        return seat_type;
+    public travelClass getSeat_class() {
+        return seat_class;
     }
 
-    public void setSeat_type(String seat_type) {
-        this.seat_type = seat_type;
+    public void setSeat_class(travelClass seat_class) {
+        this.seat_class = seat_class;
     }
 
-    public double getPrice() {
-        return price;
+    public int getNum_checked_bags() {
+        return num_checked_bags;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setNum_checked_bags(int num_checked_bags) {
+        this.num_checked_bags = num_checked_bags;
     }
-
-    public int getNum_checked_bags() { return num_checked_bags; }
-
-    public void setNum_checked_bags(int num_checked_bags) { this.num_checked_bags = num_checked_bags; }
 }

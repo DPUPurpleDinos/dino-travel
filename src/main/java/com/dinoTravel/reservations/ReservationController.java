@@ -106,7 +106,7 @@ public class ReservationController {
         long bookingID = System.currentTimeMillis();
         for (ReservationRequest request : requestedReservation){
             for (Flight requestedFlight: request.getFlight_request_info()){
-                Example<Flight> example = Example.of(requestedFlight);
+                Example<Flight> example = Example.of(requestedFlight, matcher);
                 List<Flight> p = flightRepository.findAll(example);
                 System.out.println(p.toString());
                 //boolean n = flightRepository.exists(requestedFlight);

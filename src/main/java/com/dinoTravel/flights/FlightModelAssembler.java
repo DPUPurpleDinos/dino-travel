@@ -24,4 +24,12 @@ class FlightModelAssembler implements RepresentationModelAssembler<Flight, Entit
         return EntityModel.of(flight,
                 linkTo(methodOn(FlightController.class).getFlightById(flight.getFlight_id())).withSelfRel());
     }
+
+    /**
+     * Update an existing complaint already contained in the ComplaintRepository
+     * Otherwise save it to the FlightRepository
+     * @param flight The body of the flight
+     * @param flightId The id for the existing flight
+     * @return The body of the updated flight as a ResponseEntity
+     */
 }

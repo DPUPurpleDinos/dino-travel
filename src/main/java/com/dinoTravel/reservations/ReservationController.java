@@ -4,11 +4,11 @@ import com.dinoTravel.TokenVerifier;
 import com.dinoTravel.TokenVerifierResponse;
 import com.dinoTravel.flights.Flight;
 import com.dinoTravel.flights.FlightRepository;
+import com.dinoTravel.reservations.exceptions.FlightIsFull;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
-import java.math.BigInteger;
-import java.util.Optional;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -52,6 +52,11 @@ class ReservationErrorHandler {
     @ExceptionHandler(InvalidCredentials.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     String invalidCredentials(InvalidCredentials ex) {return ex.getMessage();}
+
+    @ResponseBody
+    @ExceptionHandler(FlightIsFull.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    String flightIsFull(FlightIsFull ex) {return ex.getMessage();}
 }
 
 @RestController
@@ -100,25 +105,49 @@ public class ReservationController {
 
 
     @PostMapping
-    ReservationRequest createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservation) {
+    HttpStatus createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
+        //verify token
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
-        ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnorePaths("flight_id");
+        System.out.println(response.getSubject());
+        //make matcher to match any flights that are exactly the same
+        //we use a matcher because it is better than making a long sql
+        //query with 5 params
+        //and rand
+        ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnorePaths("flight_id", "seats_available");
+        Random rand = new Random();
+        //get bookingID off system time
         long bookingID = System.currentTimeMillis();
-        for (ReservationRequest request : requestedReservation){
+
+        //for every given reservation book it
+        for (ReservationRequest request : requestedReservations){
+            //for every given flight check if
             for (Flight requestedFlight: request.getFlight_request_info()){
-                Example<Flight> example = Example.of(requestedFlight, matcher);
-                List<Flight> p = flightRepository.findAll(example);
-                System.out.println(p.toString());
-                //boolean n = flightRepository.exists(requestedFlight);
-                //int got = flightRepository.existsByInfo(requestedFlight.getDeparture_airport(), requestedFlight.getArrival_airport(), requestedFlight.getDeparture_time(), requestedFlight.getArrival_time(), requestedFlight.getFlight_provider(), requestedFlight.getFlight_code()).intValue();
-                //System.out.println(got);
-                //if (got != 1){
-                //    flightRepository.save(requestedFlight);
-                //}
+                List<Flight> flightMatches = flightRepository.findAll(Example.of(requestedFlight, matcher));
+                int reservationFlightID;
+                if (flightMatches.isEmpty()){
+                    //the requested flight exists
+                    requestedFlight.setSeats_available(rand.nextInt(10, 50));
+                    flightRepository.save(requestedFlight);
+                    reservationFlightID = requestedFlight.getFlight_id();
+                }else{
+                    //else remove a passenger from the flight
+                    Flight matchedFlight = flightMatches.get(0);
+                    if (matchedFlight.getSeats_available() > 0) {
+                        matchedFlight.addSeats_available(-1);
+                        flightRepository.save(flightMatches.get(0));
+                        reservationFlightID = matchedFlight.getFlight_id();
+                    }else{
+                        throw new FlightIsFull(matchedFlight.getDeparture_airport(), matchedFlight.getArrival_airport());
+                    }
+                }
+                //for every flight make the appropriate reservation for the customer
+                Reservation newReservation = new Reservation(request, bookingID, reservationFlightID, response.getSubject());
+                System.out.println(newReservation.getSubject_id());
+                reservationRepository.save(newReservation);
             }
         }
-        System.out.println(Arrays.toString(requestedReservation));
-        return requestedReservation[0];
+        //return created status all good!
+        return HttpStatus.CREATED;
     }
 
 

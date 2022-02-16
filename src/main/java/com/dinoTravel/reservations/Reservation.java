@@ -77,6 +77,19 @@ public class Reservation {
         this.num_checked_bags = num_checked_bags;
     }
 
+    public Reservation(ReservationRequest r, long booking_id, int flight_id, String subject_id){
+        this.price = r.getPrice();
+        this.tripType = r.getTrip_type();
+        this.traveler_type = r.getTraveler_type();
+        this.traveler_name = r.getTraveler_name();
+        this.seat_id = r.getSeat_id();
+        this.seat_class = r.getSeat_class();
+        this.num_checked_bags = r.getNum_checked_bags();
+        this.booking_id = booking_id;
+        this.flight_id = flight_id;
+        this.subject_id = subject_id;
+    }
+
     /**
      * Default constructor
      */

@@ -1,8 +1,5 @@
 package com.dinoTravel.flights;
 
-import com.dinoTravel.reservations.flightRequest;
-import lombok.Data;
-
 import javax.persistence.*;
 
 /**
@@ -38,6 +35,9 @@ public class Flight {
     @Column(name = "arrival_time")
     public String arrival_time;
 
+    @Column(name = "seats_available")
+    public int seats_available;
+
     /**
      * The constructor to create Flight objects
      * @param flight_code The code that an airline assigns to a flight (ex: DL1234)
@@ -46,16 +46,34 @@ public class Flight {
      * @param departure_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to depart
      * @param arrival_airport The airport code for the arrival airport
      * @param arrival_time The DateTime (YYYY-MM-DD HH-MM-SS) the flight is scheduled to land
+     * @param seats_available The seats_available in the flight
      */
-    public Flight(String flight_code, String flight_provider, String departure_airport, String departure_time, String arrival_airport, String arrival_time) {
-        setFlight_code(flight_code);
-        setFlight_provider(flight_provider);
-        setDeparture_airport(departure_airport);
-        setDeparture_time(departure_time);
-        setArrival_airport(arrival_airport);
-        setArrival_time(arrival_time);
+    public Flight(int flight_id, String flight_code, String flight_provider,
+        String departure_airport, String departure_time, String arrival_airport,
+        String arrival_time, int seats_available) {
+        this.flight_id = flight_id;
+        this.flight_code = flight_code;
+        this.flight_provider = flight_provider;
+        this.departure_airport = departure_airport;
+        this.departure_time = departure_time;
+        this.arrival_airport = arrival_airport;
+        this.arrival_time = arrival_time;
+        this.seats_available = seats_available;
     }
 
+    @Override
+    public String toString() {
+        return "Flight{" +
+            "flight_id=" + flight_id +
+            ", flight_code='" + flight_code + '\'' +
+            ", flight_provider='" + flight_provider + '\'' +
+            ", departure_airport='" + departure_airport + '\'' +
+            ", departure_time='" + departure_time + '\'' +
+            ", arrival_airport='" + arrival_airport + '\'' +
+            ", arrival_time='" + arrival_time + '\'' +
+            ", seats_available=" + seats_available +
+            '}';
+    }
 
     /**
      * Default constructor
@@ -120,4 +138,18 @@ public class Flight {
     public void setArrival_time(String arrival_time) {
         this.arrival_time = arrival_time;
     }
+
+    public int getSeats_available() {
+        return seats_available;
+    }
+
+    public void setSeats_available(int seats_available) {
+        this.seats_available = seats_available;
+    }
+
+    public void addSeats_available(int add){
+        this.seats_available += add;
+    }
+
+
 }

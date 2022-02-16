@@ -5,27 +5,19 @@ import com.dinoTravel.TokenVerifierResponse;
 import com.dinoTravel.flights.Flight;
 import com.dinoTravel.flights.FlightRepository;
 import com.dinoTravel.reservations.exceptions.FlightIsFull;
+import com.dinoTravel.reservations.exceptions.InvalidBagAmountException;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
-import com.dinoTravel.users.User;
-import com.dinoTravel.users.UserRequest;
-import com.dinoTravel.users.exceptions.UserNotFoundException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handles ReservationNotFoundExceptions thrown by the controller
@@ -53,15 +45,35 @@ class ReservationExceptionHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     String tooManyReservationsHandler(TooManyReservationsException ex) { return ex.getMessage(); }
 
+    /**
+     * Generate a 401 error if the user is unauthorized to perform an action
+     * @param ex InvalidCredentials
+     * @return String explaning what the user cant do
+     */
     @ResponseBody
     @ExceptionHandler(InvalidCredentials.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     String invalidCredentials(InvalidCredentials ex) {return ex.getMessage();}
 
+    /**
+     * Generates a 422 error if a selected flight has no seats left
+     * @param ex flightIsFull
+     * @return Error message notifying the user which flight is full
+     */
     @ResponseBody
     @ExceptionHandler(FlightIsFull.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     String flightIsFull(FlightIsFull ex) {return ex.getMessage();}
+
+    /**
+     * Generate a 400 error if the bag amount requested is too much
+     * @param ex InvalidBagAmountException
+     * @return String saying that the bag amount is invalid
+     */
+    @ResponseBody
+    @ExceptionHandler(InvalidBagAmountException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    String InvalidBagAmount(InvalidBagAmountException ex) {return ex.getMessage();}
 }
 
 @RestController
@@ -70,33 +82,46 @@ public class ReservationController {
 
     @Autowired
     private final ReservationRepository reservationRepository;
-    private final ReservationModelAssembler reservationAssembler;
     private final FlightRepository flightRepository;
 
     /**
      * Constructor to create a RestController for Reservation objects
      * @param repository Repository to save Reservation objects
-     * @param assembler Assembler to create the JSON response
      * @param flightRepository Repository to save flights
      */
-    ReservationController(ReservationRepository repository, ReservationModelAssembler assembler,
+    ReservationController(ReservationRepository repository,
         FlightRepository flightRepository) {
         this.reservationRepository = repository;
-        this.reservationAssembler = assembler;
         this.flightRepository = flightRepository;
     }
 
+    /**
+     * Return all booked reservations, this will not be in productions
+     * just here to look good
+     * @return List of all booked reservations
+     */
     @GetMapping("/all")
     List<Reservation> getAllReservations(){
         return reservationRepository.findAll();
     }
 
+    /**
+     * get all the reservation ids associated with a user
+     * @param auth auth string
+     * @return list of all the reservations associated with a user
+     */
     @GetMapping("/user")
     List<Reservation> getReservationsByUser(@RequestHeader("Authorization") String auth){
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
         return reservationRepository.findBySubjectId(response.getSubject());
     }
 
+    /**
+     * get a reservation from a specified reservation id
+     * @param auth auth string
+     * @param reservationId the specified reservation id
+     * @return return the id with the specified reservation
+     */
     @GetMapping("/{id}")
     Reservation getReservationById(@RequestHeader("Authorization") String auth, @PathVariable ("id") int reservationId) {
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
@@ -108,7 +133,17 @@ public class ReservationController {
         }
     }
 
+    //get a formatted return request
+    //for now I am not going to make it
 
+    /**
+     * Given a list of users and associated flights it will make new
+     * reservations and new flights is not already present also takes away
+     * seat availability from booked flights
+     * @param auth auth string
+     * @param requestedReservations the array of requested reservations
+     * @return created status if everything got made
+     */
     @PostMapping
     HttpStatus createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
         //verify token
@@ -153,7 +188,13 @@ public class ReservationController {
         return HttpStatus.CREATED;
     }
 
-    //put mod reservations
+    /**
+     * Given a dict of changes, change the associated reservation
+     * @param auth auth string
+     * @param changes the fields to change
+     * @param reservationId the id of the reservation to change
+     * @return the newly changed reservation
+     */
     @PutMapping("/{id}")
     Reservation changeReservation(@RequestHeader("Authorization") String auth,@RequestBody Map<String, String> changes, @PathVariable("id") int reservationId){
         TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
@@ -168,8 +209,14 @@ public class ReservationController {
     }
 
     //put mod bookings
+    //I have not done this yet may not be needed
 
-    //delete bookings
+    /**
+     * Delete a requested booking
+     * @param auth auth string
+     * @param bookingID the booking id to deleted
+     * @return ok if every thing went well
+     */
     @DeleteMapping("/booking/{id}")
     HttpStatus deleteBooking(@RequestHeader("Authorization") String auth, @PathVariable("id") long bookingID) {
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
@@ -181,10 +228,17 @@ public class ReservationController {
         for (Reservation r : reservationsInBooking){
             reservationRepository.deleteById(r.getReservation_id());
         }
+
         return HttpStatus.OK;
     }
 
-    //delete reservations
+    /**
+     * delete a requested reservation, this is singular
+     * use booking for multiple
+     * @param auth auth string
+     * @param reservationId the id of the reservations to be deleted
+     * @return ok if everything went well
+     */
     @DeleteMapping("/{id}")
     HttpStatus deleteReservation(@RequestHeader("Authorization") String auth, @PathVariable("id") int reservationId){
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);

@@ -2,13 +2,12 @@ package com.dinoTravel.reservations;
 
 import com.dinoTravel.reservations.enums.travelerType;
 import com.dinoTravel.reservations.enums.tripType;
+import com.dinoTravel.reservations.exceptions.InvalidBagAmountException;
 import com.dinoTravel.reservations.exceptions.ReservationVariableIsNotValidException;
 import com.dinoTravel.travelClass;
-import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder.In;
 
 /**
  * A representation of a reservation that allows values
@@ -69,6 +68,7 @@ public class Reservation {
     public Reservation(int reservation_id, long booking_id, String subject_id, double price,
         tripType trip_Type, int flight_id, travelerType traveler_type, String traveler_name,
         String seat_id, travelClass seat_class, int num_checked_bags) {
+        bagCheck(num_checked_bags);
         this.reservation_id = reservation_id;
         this.booking_id = booking_id;
         this.subject_id = subject_id;
@@ -77,17 +77,18 @@ public class Reservation {
         this.flight_id = flight_id;
         this.traveler_type = traveler_type;
         this.traveler_name = traveler_name;
-        this.seat_id = seat_id;
+        this.seat_id = seat_id.toUpperCase();
         this.seat_class = seat_class;
         this.num_checked_bags = num_checked_bags;
     }
 
     public Reservation(ReservationRequest r, long booking_id, int flight_id, String subject_id){
+        bagCheck(r.getNum_checked_bags());
         this.price = r.getPrice();
         this.tripType = r.getTrip_type();
         this.traveler_type = r.getTraveler_type();
         this.traveler_name = r.getTraveler_name();
-        this.seat_id = r.getSeat_id();
+        this.seat_id = r.getSeat_id().toUpperCase();
         this.seat_class = r.getSeat_class();
         this.num_checked_bags = r.getNum_checked_bags();
         this.booking_id = booking_id;
@@ -107,6 +108,12 @@ public class Reservation {
             }else{
                 throw new ReservationVariableIsNotValidException(pair.getKey());
             }
+        }
+    }
+
+    private void bagCheck(int bags) throws InvalidBagAmountException{
+        if ((0 > bags) || (bags > 2)){
+            throw new InvalidBagAmountException("Invalid bag amount given");
         }
     }
 
@@ -201,7 +208,11 @@ public class Reservation {
     }
 
     public void setNum_checked_bags(String num_checked_bags){
-        setNum_checked_bags(Integer.parseInt(num_checked_bags));
+        int newNumBags = Integer.parseInt(num_checked_bags);
+        bagCheck(newNumBags);
+        int difNumBags = this.getNum_checked_bags() - newNumBags;
+        this.setPrice(this.getPrice() + (difNumBags * 35.0));
+        setNum_checked_bags(newNumBags);
     }
 
     public void setNum_checked_bags(int num_checked_bags) {

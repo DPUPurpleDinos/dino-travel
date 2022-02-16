@@ -11,4 +11,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     @Query(value = "SELECT * FROM auth_reservations WHERE subject_id=?1", nativeQuery = true)
     List<Reservation> findBySubjectId(String subject_id);
+
+    @Query(value = "SELECT DISTINCT subject_id FROM auth_reservations WHERE booking_id=?1", nativeQuery = true)
+    String findBookingOwner(long bookingId);
+
+    @Query(value = "SELECT * FROM auth_reservations WHERE booking_id=?1", nativeQuery = true)
+    List<Reservation> findByBookingId(long bookingId);
 }

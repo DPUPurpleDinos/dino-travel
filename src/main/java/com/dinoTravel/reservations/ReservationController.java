@@ -8,6 +8,7 @@ import com.dinoTravel.reservations.exceptions.FlightIsFull;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
+import java.util.Objects;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -108,7 +109,6 @@ public class ReservationController {
     HttpStatus createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
         //verify token
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
-        System.out.println(response.getSubject());
         //make matcher to match any flights that are exactly the same
         //we use a matcher because it is better than making a long sql
         //query with 5 params
@@ -142,12 +142,44 @@ public class ReservationController {
                 }
                 //for every flight make the appropriate reservation for the customer
                 Reservation newReservation = new Reservation(request, bookingID, reservationFlightID, response.getSubject());
-                System.out.println(newReservation.getSubject_id());
                 reservationRepository.save(newReservation);
             }
         }
         //return created status all good!
         return HttpStatus.CREATED;
+    }
+
+    //put mod reservations
+
+    //put mod bookings
+
+    //delete bookings
+    @DeleteMapping("/booking/{id}")
+    HttpStatus deleteBooking(@RequestHeader("Authorization") String auth, @PathVariable("id") long bookingID) {
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        String bookingOwner = reservationRepository.findBookingOwner(bookingID);
+        if (!bookingOwner.equals(response.getSubject())){
+            throw new InvalidCredentials("You are not authorized to delete the requested booking.");
+        }
+        List<Reservation> reservationsInBooking = reservationRepository.findByBookingId(bookingID);
+        for (Reservation r : reservationsInBooking){
+            reservationRepository.deleteById(r.getReservation_id());
+        }
+        return HttpStatus.OK;
+    }
+
+    //delete reservations
+    @DeleteMapping("/{id}")
+    HttpStatus deleteReservation(@RequestHeader("Authorization") String auth, @PathVariable("id") int reservationId){
+        TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
+        //Check if the user owns the requested reservation to be deleted
+        if (!reservation.getSubject_id().equals(response.getSubject())){
+            throw new InvalidCredentials("You are not authorized to delete the requested reservation.");
+        }
+        reservationRepository.deleteById(reservationId);
+
+        return HttpStatus.OK;
     }
 
 
@@ -215,19 +247,5 @@ public class ReservationController {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(newReservations);
-    }
-
-    /**
-     * Delete a reservation from the ReservationRepository
-     * @param reservationId The ID for a reservation to delete
-     * @return An empty body as a ResponseEntity
-     */
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteReservation(@PathVariable ("id") int reservationId) {
-        reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
-
-        reservationRepository.deleteById(reservationId);
-
-        return ResponseEntity.noContent().build();
     }
 }

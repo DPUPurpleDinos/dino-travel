@@ -8,6 +8,10 @@ import com.dinoTravel.reservations.exceptions.FlightIsFull;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
+import com.dinoTravel.users.User;
+import com.dinoTravel.users.UserRequest;
+import com.dinoTravel.users.exceptions.UserNotFoundException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +31,7 @@ import java.util.stream.Collectors;
  * Handles ReservationNotFoundExceptions thrown by the controller
  */
 @ControllerAdvice
-class ReservationErrorHandler {
+class ReservationExceptionHandler {
     /**
      * Generate a 404 status is a requested ID is not found
      * and return an error message as a String
@@ -150,6 +154,18 @@ public class ReservationController {
     }
 
     //put mod reservations
+    @PutMapping("/{id}")
+    Reservation changeReservation(@RequestHeader("Authorization") String auth,@RequestBody Map<String, String> changes, @PathVariable("id") int reservationId){
+        TokenVerifierResponse Response = TokenVerifier.verifyToken(auth);
+
+        Reservation existingReservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ReservationNotFoundException(reservationId));
+
+        existingReservation.update(changes);
+
+        reservationRepository.save(existingReservation);
+
+        return existingReservation;
+    }
 
     //put mod bookings
 
@@ -180,72 +196,5 @@ public class ReservationController {
         reservationRepository.deleteById(reservationId);
 
         return HttpStatus.OK;
-    }
-
-
-    /**
-     * Returns all Reservations saved in the ReservationRepository
-     * @return A collection of Reservations and their bodies as an EntityModel
-
-    @GetMapping("/multi")
-    CollectionModel<EntityModel<Reservation>> getAllReservationsMulti() {
-        return getAllReservations();
-    }*/
-
-    /**
-     * Update an existing reservation already contained in the ReservationRepository
-     * Otherwise save it to the ReservationRepository
-     * @param reservation The body of the reservation
-     * @param reservationId The ID for an existing reservation
-     * @return The body of the updated reservation as a ResponseEntity
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> updateReservation(@RequestBody Reservation reservation, @PathVariable ("id") int reservationId) {
-        Reservation existingReservation = reservationRepository.findById(reservationId)
-            .map(newReservation -> {
-                newReservation.setUser_id(reservation.getUser_id());
-                newReservation.setTrip_type(reservation.getTrip_type());
-                newReservation.setFlight_id(reservation.getFlight_id());
-                newReservation.setTraveler_type(reservation.getTraveler_type());
-                newReservation.setTraveler_name(reservation.getTraveler_name());
-                newReservation.setNum_checked_bags(reservation.getNum_checked_bags());
-                newReservation.setSeat_id(reservation.getSeat_id());
-                newReservation.setSeat_type(reservation.getSeat_type());
-                newReservation.setPrice(reservation.getPrice());
-                return reservationRepository.save(newReservation);
-            }).orElseGet(() -> {
-                reservation.setReservation_id(reservationId);
-                return reservationRepository.save(reservation);
-            });
-        EntityModel<Reservation> entityModel = reservationAssembler.toModel(existingReservation);
-
-        return ResponseEntity
-            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-            .body(entityModel);
-    }*/
-
-    /**
-     * Bulk add reservations to the ReservationRepository
-     * @param reservations A JSON array of Reservations
-     * @return A collection of Reservations and their bodies as an EntityModel
-     */
-    @PostMapping("/multi")
-    CollectionModel<EntityModel<Reservation>> createReservations(@RequestBody Reservation [] reservations) {
-
-        // Throw an exception if the amount of reservations exceeds the limit
-        int limit = 50;
-        if (reservations.length > limit) {
-            throw new TooManyReservationsException(limit);
-        }
-
-        for (Reservation res : reservations) {
-            reservationAssembler.toModel(reservationRepository.save(res));
-        }
-
-        List<EntityModel<Reservation>> newReservations = Arrays.stream(reservations)
-                .map(reservationAssembler::toModel)
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(newReservations);
     }
 }

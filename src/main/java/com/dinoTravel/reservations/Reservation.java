@@ -2,8 +2,13 @@ package com.dinoTravel.reservations;
 
 import com.dinoTravel.reservations.enums.travelerType;
 import com.dinoTravel.reservations.enums.tripType;
+import com.dinoTravel.reservations.exceptions.ReservationVariableIsNotValidException;
 import com.dinoTravel.travelClass;
+import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
+import java.util.Map;
+import java.util.function.Consumer;
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
 
 /**
  * A representation of a reservation that allows values
@@ -88,6 +93,21 @@ public class Reservation {
         this.booking_id = booking_id;
         this.flight_id = flight_id;
         this.subject_id = subject_id;
+    }
+
+    public void update(Map<String, String> changes) throws ReservationVariableIsNotValidException {
+        Map<String, Consumer<String>> mutable = Map.of(
+            "traveler_name", this::setTraveler_name,
+            "num_checked_bags", this::setNum_checked_bags
+        );
+
+        for(Map.Entry<String, String> pair : changes.entrySet()){
+            if (mutable.containsKey(pair.getKey())) {
+                mutable.get(pair.getKey()).accept(pair.getValue());
+            }else{
+                throw new ReservationVariableIsNotValidException(pair.getKey());
+            }
+        }
     }
 
     /**
@@ -178,6 +198,10 @@ public class Reservation {
 
     public int getNum_checked_bags() {
         return num_checked_bags;
+    }
+
+    public void setNum_checked_bags(String num_checked_bags){
+        setNum_checked_bags(Integer.parseInt(num_checked_bags));
     }
 
     public void setNum_checked_bags(int num_checked_bags) {

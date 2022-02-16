@@ -1,6 +1,5 @@
 package com.dinoTravel.flights;
 
-import com.dinoTravel.reservations.flightRequest;
 import java.math.BigInteger;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

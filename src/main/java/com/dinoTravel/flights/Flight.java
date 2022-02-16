@@ -1,5 +1,8 @@
 package com.dinoTravel.flights;
 
+import com.dinoTravel.users.exceptions.UserVariableIsNotValidException;
+import java.util.Map;
+import java.util.function.Consumer;
 import javax.persistence.*;
 
 /**

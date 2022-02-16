@@ -9,12 +9,16 @@ import com.dinoTravel.reservations.exceptions.InvalidBagAmountException;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
+import java.net.URI;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -145,7 +149,7 @@ public class ReservationController {
      * @return created status if everything got made
      */
     @PostMapping
-    HttpStatus createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
+    ResponseEntity<?> createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
         //verify token
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
         //make matcher to match any flights that are exactly the same
@@ -185,7 +189,11 @@ public class ReservationController {
             }
         }
         //return created status all good!
-        return HttpStatus.CREATED;
+        Map<String, Long> ret = new HashMap<>();
+        ret.put("booking_id", bookingID);
+        return ResponseEntity.created(
+            URI.create("https://www.purpledinoapi.link:8080/api/reservations/booking/" + bookingID))
+            .body(ret);
     }
 
     /**

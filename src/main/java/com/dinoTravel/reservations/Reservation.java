@@ -210,7 +210,7 @@ public class Reservation {
     public void setNum_checked_bags(String num_checked_bags){
         int newNumBags = Integer.parseInt(num_checked_bags);
         bagCheck(newNumBags);
-        int difNumBags = this.getNum_checked_bags() - newNumBags;
+        int difNumBags = newNumBags - this.getNum_checked_bags();
         this.setPrice(this.getPrice() + (difNumBags * 35.0));
         setNum_checked_bags(newNumBags);
     }

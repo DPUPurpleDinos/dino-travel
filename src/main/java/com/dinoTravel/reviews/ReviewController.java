@@ -19,27 +19,26 @@ class ReviewNotFoundAdvice {
   /**
    * Generates a 404 status if a requested ID is not found and
    * returns an error message as a String
-   * @param ex ComplaintNotFoundException
+   * @param ex ReviewNotFoundException
    * @return Error message containing the review_id that caused the exception
    */
-
   @ResponseBody
   @ExceptionHandler(ReviewNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   String ReviewNotFoundHandler(ReviewNotFoundException ex){
     return ex.getMessage();
   }
-
-  /**
-   *  Handles HTTP requests for Review objects
-   */
 }
+
+/**
+ *  Handles HTTP requests for Review objects
+ */
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
 
   @Autowired
-  private ReviewRepository reviewRepository;
+  private final ReviewRepository reviewRepository;
   private final ReviewModelAssembler reviewAssembler;
 
   /**

@@ -52,7 +52,7 @@ class TooManyReservationsAdvice {
 public class ReservationController {
 
     @Autowired
-    private ReservationRepository reservationRepository;
+    private final ReservationRepository reservationRepository;
     private final ReservationModelAssembler reservationAssembler;
 
     /**

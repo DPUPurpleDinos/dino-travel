@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Handles exceptions that get thrown by the FlightController
  */
 @ControllerAdvice
-
 class ComplaintNotFoundAdvice {
 
 /**
@@ -26,25 +25,23 @@ class ComplaintNotFoundAdvice {
  * @param ex ComplaintNotFoundException
  * @return Error message containing the Complaint id that caused the exception
  */
-
   @ResponseBody
   @ExceptionHandler(ComplaintNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   String ComplaintNotFoundHandler(ComplaintNotFoundException ex){
     return ex.getMessage();
   }
-
-  /**
-   *  Handles HTTP requests for Complaint objects
-   */
 }
 
+/**
+ *  Handles HTTP requests for Complaint objects
+ */
 @RestController
 @RequestMapping("/api/complaints")
 public class ComplaintController {
 
   @Autowired
-  private ComplaintRepository complaintRepository;
+  private final ComplaintRepository complaintRepository;
   private final ComplaintModelAssembler complaintAssembler;
 
   /**
@@ -52,11 +49,11 @@ public class ComplaintController {
    * @param repository Repository to save the Complaint objects
    * @param assembler Assembler to create the JSON response
    */
-
   ComplaintController(ComplaintRepository repository, ComplaintModelAssembler assembler){
     this.complaintRepository = repository;
     this.complaintAssembler = assembler;
   }
+
   /**
    * Returns all complaints saved in the ComplaintRepository
    * @return A collection of Complaints and their bodies represented as an EntityModel
@@ -69,6 +66,7 @@ public class ComplaintController {
 
     return CollectionModel.of(complaints);
   }
+
   /**
    * Return the body for a single complaint
    * @param complaintId the ID for the complaint
@@ -80,6 +78,7 @@ public class ComplaintController {
 
     return complaintAssembler.toModel(complaint);
   }
+
   /**
    * Update an existing flight already contained in the ComplaintRepository
    * Otherwise save it to the ComplaintRepository
@@ -87,7 +86,6 @@ public class ComplaintController {
    * @param complaintID The id for the existing complaint
    * @return The body of the updated complaint as a ResponseEntity
    */
-
   @PutMapping("/{id}")
   ResponseEntity<?> updateComplaint(@RequestBody Complaint complaint, @PathVariable("id") int complaintID) {
     Complaint existingComplaint = complaintRepository.findById(complaintID)
@@ -134,5 +132,4 @@ public class ComplaintController {
 
     return ResponseEntity.noContent().build();
   }
-
 }

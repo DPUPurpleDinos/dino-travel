@@ -9,11 +9,21 @@ import com.dinoTravel.reservations.exceptions.InvalidBagAmountException;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
 import com.dinoTravel.reservations.exceptions.ReservationNotFoundException;
 import com.dinoTravel.reservations.exceptions.TooManyReservationsException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -87,6 +97,7 @@ public class ReservationController {
     @Autowired
     private final ReservationRepository reservationRepository;
     private final FlightRepository flightRepository;
+    private final Session session;
 
     /**
      * Constructor to create a RestController for Reservation objects
@@ -97,16 +108,35 @@ public class ReservationController {
         FlightRepository flightRepository) {
         this.reservationRepository = repository;
         this.flightRepository = flightRepository;
-    }
 
-    /**
-     * Return all booked reservations, this will not be in productions
-     * just here to look good
-     * @return List of all booked reservations
-     */
-    @GetMapping("/all")
-    List<Reservation> getAllReservations(){
-        return reservationRepository.findAll();
+        //set the session for sending emails
+        String host = "smtp.gmail.com";//or IP address
+
+        //Get the session object
+        Properties properties = System.getProperties();
+        properties.setProperty("mail.smtp.host", host);
+
+        // Setup mail server
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", "465");
+        properties.put("mail.smtp.ssl.enable", "true");
+        properties.put("mail.smtp.auth", "true");
+
+        // Get the Session object.// and pass username and password
+        this.session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                Properties properties = new Properties();
+                //open the application file from the classpath
+                try(InputStream is = getClass().getResourceAsStream("/application.properties")){
+                    properties.load(is);
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+                //set the email password
+                String emailPassword = properties.getProperty("emailPassword");
+                return new PasswordAuthentication("purpledinoair@gmail.com", emailPassword);
+            }
+        });
     }
 
     /**
@@ -188,13 +218,53 @@ public class ReservationController {
                 reservationRepository.save(newReservation);
             }
         }
+        //send the confirmation email
+        sendEmail(response.getPayload().getEmail(), (String) response.getPayload().get("name"), bookingID);
+
         //return created status all good!
         Map<String, Long> ret = new HashMap<>();
         ret.put("booking_id", bookingID);
+
         return ResponseEntity.created(
             URI.create("https://www.purpledinoapi.link:8080/api/reservations/booking/" + bookingID))
             .body(ret);
     }
+
+    /**
+     * Method for sending confirmation emails
+     * @param toEmail the email address to send the message to
+     * @param Name the name to use is the email
+     * @param BookingID the bookingID to use in the subject
+     */
+    private void sendEmail(String toEmail, String Name, long BookingID){
+        String from = "purpledinoair@gmail.com";
+        // Used to debug SMTP issues
+        //session.setDebug(true);
+        try {
+            // Create a default MimeMessage object.
+            MimeMessage message = new MimeMessage(session);
+
+            // Set From: header field of the header.
+            message.setFrom(new InternetAddress(from));
+
+            // Set To: header field of the header.
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
+
+            // Set Subject: header field
+            message.setSubject("Purple Dino Travel Confirmation - " + BookingID);
+
+            //get the html file
+            String htmlFile = new String(getClass().getResourceAsStream("/templates/EmailMessage.html").readAllBytes(), StandardCharsets.UTF_8);
+            // Now set the actual message
+            message.setContent(htmlFile, "text/html; charset=utf-8");
+
+            // Send message
+            Transport.send(message);
+        } catch (MessagingException | IOException mex) {
+            mex.printStackTrace();
+        }
+    }
+
 
     /**
      * Given a dict of changes, change the associated reservation

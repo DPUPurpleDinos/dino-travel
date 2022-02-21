@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.dinoTravel'
-version = '0.0.10-UpdatedReservationsController'
+version = '0.0.12-NoGetAllReservations'
 sourceCompatibility = '17'
 
 repositories {
@@ -25,6 +25,7 @@ dependencies {
 	implementation 'com.amadeus:amadeus-java:5.8.2'
 	implementation 'com.google.code.gson:gson:2.8.9'
 	implementation 'com.google.api-client:google-api-client:1.32.1'
+	implementation 'com.sun.mail:javax.mail:1.6.2'
 }
 
 test {

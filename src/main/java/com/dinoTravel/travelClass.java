@@ -6,7 +6,7 @@ public enum travelClass {
   BUSINESS("BUSINESS"),
   FIRST("FIRST");
 
-  private String name;
+  private final String name;
   private travelClass(String name){
     this.name = name;
   }

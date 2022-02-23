@@ -4,6 +4,7 @@ import com.dinoTravel.TokenVerifier;
 import com.dinoTravel.TokenVerifierResponse;
 import com.dinoTravel.flights.Flight;
 import com.dinoTravel.flights.FlightRepository;
+import com.dinoTravel.reservations.enums.tripType;
 import com.dinoTravel.reservations.exceptions.FlightIsFull;
 import com.dinoTravel.reservations.exceptions.InvalidBagAmountException;
 import com.dinoTravel.reservations.exceptions.InvalidCredentials;
@@ -24,6 +25,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -62,7 +66,7 @@ class ReservationExceptionHandler {
     /**
      * Generate a 401 error if the user is unauthorized to perform an action
      * @param ex InvalidCredentials
-     * @return String explaning what the user cant do
+     * @return String explaining what the user can't do
      */
     @ResponseBody
     @ExceptionHandler(InvalidCredentials.class)
@@ -98,6 +102,8 @@ public class ReservationController {
     private final ReservationRepository reservationRepository;
     private final FlightRepository flightRepository;
     private final Session session;
+    private final ExampleMatcher matcher;
+    private final Random rand;
 
     /**
      * Constructor to create a RestController for Reservation objects
@@ -108,6 +114,12 @@ public class ReservationController {
         FlightRepository flightRepository) {
         this.reservationRepository = repository;
         this.flightRepository = flightRepository;
+        //make matcher to match any flights that are exactly the same
+        //we use a matcher because it is better than making a long sql
+        //query with 5 params
+        //and rand
+        this.matcher = ExampleMatcher.matchingAll().withIgnorePaths("flight_id", "seats_available");
+        this.rand = new Random();
 
         //set the session for sending emails
         String host = "smtp.gmail.com";//or IP address
@@ -182,12 +194,6 @@ public class ReservationController {
     ResponseEntity<?> createReservation(@RequestHeader("Authorization") String auth, @RequestBody ReservationRequest [] requestedReservations) {
         //verify token
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
-        //make matcher to match any flights that are exactly the same
-        //we use a matcher because it is better than making a long sql
-        //query with 5 params
-        //and rand
-        ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnorePaths("flight_id", "seats_available");
-        Random rand = new Random();
         //get bookingID off system time
         long bookingID = System.currentTimeMillis();
 
@@ -219,7 +225,7 @@ public class ReservationController {
             }
         }
         //send the confirmation email
-        sendEmail(response.getPayload().getEmail(), (String) response.getPayload().get("name"), bookingID);
+        sendEmail(response.getPayload().getEmail(), (String) response.getPayload().get("name"), bookingID, requestedReservations[0].trip_type);
 
         //return created status all good!
         Map<String, Long> ret = new HashMap<>();
@@ -236,7 +242,8 @@ public class ReservationController {
      * @param Name the name to use is the email
      * @param BookingID the bookingID to use in the subject
      */
-    private void sendEmail(String toEmail, String Name, long BookingID){
+    @GetMapping("/sendEmail")
+    private void sendEmail(@RequestParam("toEmail") String toEmail, @RequestParam("Name") String Name, @RequestParam("BookingID") long BookingID, tripType type){
         String from = "purpledinoair@gmail.com";
         // Used to debug SMTP issues
         //session.setDebug(true);
@@ -254,9 +261,14 @@ public class ReservationController {
             message.setSubject("Purple Dino Travel Confirmation - " + BookingID);
 
             //get the html file
-            String htmlFile = new String(getClass().getResourceAsStream("/templates/EmailMessage.html").readAllBytes(), StandardCharsets.UTF_8);
+            Document doc = Jsoup.parse(getClass().getResourceAsStream("/templates/EmailMessage.html"), "UTF-8", "https://daniel-mccarthy.github.io");
+            Element tag = doc.select("p.nameTag").first();
+            tag.replaceWith(doc.createElement("p").appendText("Hello " + Name + "! Your " + type + " has been booked!"));
+            tag = doc.select("p.idTag").first();
+            tag.replaceWith(doc.createElement("p").appendText("Your booking ID is: " + BookingID));
+
             // Now set the actual message
-            message.setContent(htmlFile, "text/html; charset=utf-8");
+            message.setContent(doc.toString(), "text/html; charset=utf-8");
 
             // Send message
             Transport.send(message);

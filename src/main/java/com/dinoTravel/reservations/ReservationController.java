@@ -15,9 +15,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -196,15 +198,18 @@ public class ReservationController {
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
         //get bookingID off system time
         long bookingID = System.currentTimeMillis();
-
+        Set<String> nameSet = new HashSet<>();
         //for every given reservation book it
         for (ReservationRequest request : requestedReservations){
             //for every given flight check if
             for (Flight requestedFlight: request.getFlight_request_info()){
+                nameSet.add(requestedFlight.getArrival_airport());
+                //get any matched flights, using the matcher. This is easier than
+                //writing a query with a lot of input
                 List<Flight> flightMatches = flightRepository.findAll(Example.of(requestedFlight, matcher));
                 int reservationFlightID;
                 if (flightMatches.isEmpty()){
-                    //the requested flight exists
+                    //create the new flight
                     requestedFlight.setSeats_available(rand.nextInt(10, 50));
                     flightRepository.save(requestedFlight);
                     reservationFlightID = requestedFlight.getFlight_id();
@@ -216,6 +221,7 @@ public class ReservationController {
                         flightRepository.save(flightMatches.get(0));
                         reservationFlightID = matchedFlight.getFlight_id();
                     }else{
+                        //throw an error if the flight is full
                         throw new FlightIsFull(matchedFlight.getDeparture_airport(), matchedFlight.getArrival_airport());
                     }
                 }
@@ -225,15 +231,24 @@ public class ReservationController {
             }
         }
         //send the confirmation email
-        sendEmail(response.getPayload().getEmail(), (String) response.getPayload().get("name"), bookingID, requestedReservations[0].trip_type);
+        String flightName = makeFlightString(nameSet);
+        sendEmail(response.getPayload().getEmail(), (String) response.getPayload().get("name"), bookingID, requestedReservations[0].trip_type, flightName);
 
         //return created status all good!
         Map<String, Long> ret = new HashMap<>();
         ret.put("booking_id", bookingID);
-
         return ResponseEntity.created(
             URI.create("https://www.purpledinoapi.link:8080/api/reservations/booking/" + bookingID))
             .body(ret);
+    }
+
+    private String makeFlightString(Set<String> names){
+        StringBuilder ret = new StringBuilder();
+        for (String flight : names){
+            ret.append(flight).append(" to ");
+        }
+        ret.setLength(ret.length() - 4);
+        return ret.toString();
     }
 
     /**
@@ -242,11 +257,8 @@ public class ReservationController {
      * @param Name the name to use is the email
      * @param BookingID the bookingID to use in the subject
      */
-    @GetMapping("/sendEmail")
-    private void sendEmail(@RequestParam("toEmail") String toEmail, @RequestParam("Name") String Name, @RequestParam("BookingID") long BookingID, tripType type){
+    private void sendEmail(String toEmail, String Name, long BookingID, tripType type, String tripName){
         String from = "purpledinoair@gmail.com";
-        // Used to debug SMTP issues
-        //session.setDebug(true);
         try {
             // Create a default MimeMessage object.
             MimeMessage message = new MimeMessage(session);
@@ -261,15 +273,22 @@ public class ReservationController {
             message.setSubject("Purple Dino Travel Confirmation - " + BookingID);
 
             //get the html file
+            //I use jsoup because it is easy to parse html files.
+            //I tried using the default java formatter and a message
+            //formatter, but they did not work. Jsoup was the best option to
+            //make good customizable content.
             Document doc = Jsoup.parse(getClass().getResourceAsStream("/templates/EmailMessage.html"), "UTF-8", "https://daniel-mccarthy.github.io");
+            //set the name values
             Element tag = doc.select("p.nameTag").first();
-            tag.replaceWith(doc.createElement("p").appendText("Hello " + Name + "! Your " + type + " has been booked!"));
+            tag.replaceWith(doc.createElement("p")
+                .appendText("Hello " + Name + "! Your " + type + " from " + tripName + " has been booked."));
+            //set the booking id values
             tag = doc.select("p.idTag").first();
-            tag.replaceWith(doc.createElement("p").appendText("Your booking ID is: " + BookingID));
+            tag.replaceWith(doc.createElement("p")
+                .appendText("Your booking ID is: " + BookingID));
 
             // Now set the actual message
             message.setContent(doc.toString(), "text/html; charset=utf-8");
-
             // Send message
             Transport.send(message);
         } catch (MessagingException | IOException mex) {

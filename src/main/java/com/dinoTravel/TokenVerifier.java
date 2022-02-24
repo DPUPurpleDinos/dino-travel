@@ -28,9 +28,10 @@ public class TokenVerifier {
    */
   public static TokenVerifierResponse verifyToken(String tokenString) throws TokenInvalid{
     GoogleIdToken idToken;
-    //Try to verify the token return a null or token if no exceptions
-    //occur
+    //Try to verify the token return a null or token if no exceptions occur
     try {
+      //automatically verifies the jwt signature, audience claim, the issuer claim, and the expiration
+      //if any fail it will give a null. Most likely the token expired
       idToken = verifier.verify(tokenString);
       //have to catch this general exceptions for the verifier
     } catch (GeneralSecurityException | IOException e) {
@@ -40,14 +41,14 @@ public class TokenVerifier {
       throw new TokenInvalid("Invalid Input Length reason: " + e.getMessage());
       //catch any other exceptions
     } catch (Exception e){
-      throw new TokenInvalid("An exception occurred reason:" + e.getMessage());
+      throw new TokenInvalid("An exception occurred reason: " + e.getMessage());
     }
     //Check if the token is not null if, if it is not everything is good
     //else it probably expired
     if (idToken != null) {
       return new TokenVerifierResponse(idToken.getPayload(), true);
     }else{
-      throw new TokenInvalid("Token Expired");
+      throw new TokenInvalid("Your token most likely expired.");
     }
   }
 }

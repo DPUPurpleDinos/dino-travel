@@ -16,6 +16,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -198,11 +199,12 @@ public class ReservationController {
         TokenVerifierResponse response = TokenVerifier.verifyToken(auth);
         //get bookingID off system time
         long bookingID = System.currentTimeMillis();
-        Set<String> nameSet = new HashSet<>();
+        Set<String> nameSet = new LinkedHashSet<>();
         //for every given reservation book it
         for (ReservationRequest request : requestedReservations){
             //for every given flight check if
             for (Flight requestedFlight: request.getFlight_request_info()){
+                nameSet.add(requestedFlight.getDeparture_airport());
                 nameSet.add(requestedFlight.getArrival_airport());
                 //get any matched flights, using the matcher. This is easier than
                 //writing a query with a lot of input

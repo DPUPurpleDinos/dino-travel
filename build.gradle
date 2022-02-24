@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.dinoTravel'
-version = '0.0.12-NoGetAllReservations'
+version = '0.0.13-SendEmailVerifications'
 sourceCompatibility = '17'
 
 repositories {

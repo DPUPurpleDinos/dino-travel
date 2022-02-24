@@ -242,6 +242,11 @@ public class ReservationController {
             .body(ret);
     }
 
+    /**
+     * Make a flight name from a given set of flight strings
+     * @param names the set of all the names in the flight
+     * @return a string that says the flight name
+     */
     private String makeFlightString(Set<String> names){
         StringBuilder ret = new StringBuilder();
         for (String flight : names){

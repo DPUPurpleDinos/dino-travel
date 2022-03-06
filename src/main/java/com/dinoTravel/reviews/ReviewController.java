@@ -79,35 +79,6 @@ public class ReviewController {
   }
 
   /**
-   * Update an existing review already contained in the ReviewRepository Otherwise save it to the
-   * ReviewRepository
-   *
-   * @param review   The body of the review
-   * @param reviewId The id for the existing review
-   * @return The body of the updated review as a ResponseEntity
-   */
-  @PutMapping("/{id}")
-  ResponseEntity<?> updateFlight(@RequestBody Review review, @PathVariable("id") int reviewId) {
-    Review existingReview = reviewRepository.findById(reviewId)
-        .map(newReview -> {
-          newReview.setReview_id(review.getReview_id());
-          newReview.setFullName(review.getFullName());
-          newReview.setEmail(review.getEmail());
-          newReview.setExperience_rating(review.getExperience_rating());
-          newReview.setRecommendation_rating(review.getExperience_rating());
-          newReview.setReview(review.getReview());
-          return reviewRepository.save(newReview);
-        }).orElseGet(() -> {
-          review.setReview_id(reviewId);
-          return reviewRepository.save(review);
-        });
-    EntityModel<Review> entityModel = reviewAssembler.toModel(existingReview);
-
-    return ResponseEntity
-        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-        .body(entityModel);
-  }
-  /**
    * Create a new review to be added to the ReviewRepository
    * @param review The body of the review
    * @return The body of the created review as a ResponseEntity
@@ -117,19 +88,6 @@ public class ReviewController {
     EntityModel<Review> entityModel = reviewAssembler.toModel(reviewRepository.save(review));
 
     return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
-  }
-  /**
-   * Delete a review from the ReviewRepository
-   * @param reviewId The id for a review to be deleted
-   * @return An empty body as a ResponseEntity
-   */
-  @DeleteMapping("/{id}")
-  ResponseEntity<?> deleteReview(@PathVariable ("id") int reviewId) {
-    reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
-    reviewRepository.deleteById(reviewId);
-
-    return ResponseEntity.noContent().build();
   }
 }
 

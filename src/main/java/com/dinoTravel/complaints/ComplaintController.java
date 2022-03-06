@@ -80,33 +80,6 @@ public class ComplaintController {
   }
 
   /**
-   * Update an existing flight already contained in the ComplaintRepository
-   * Otherwise save it to the ComplaintRepository
-   * @param complaint The body of the complaint
-   * @param complaintID The id for the existing complaint
-   * @return The body of the updated complaint as a ResponseEntity
-   */
-  @PutMapping("/{id}")
-  ResponseEntity<?> updateComplaint(@RequestBody Complaint complaint, @PathVariable("id") int complaintID) {
-    Complaint existingComplaint = complaintRepository.findById(complaintID)
-        .map(newComplaint -> {
-          newComplaint.setFullName(complaint.getFullName());
-          newComplaint.setEmail(complaint.getEmail());
-          newComplaint.setReservation_id(complaint.getReservation_id());
-          newComplaint.setComplaint(complaint.getComplaint());
-          return complaintRepository.save(newComplaint);
-        }).orElseGet(() -> {
-          complaint.setComplaint_id(complaintID);
-          return complaintRepository.save(complaint);
-        });
-    EntityModel<Complaint> entityModel = complaintAssembler.toModel(existingComplaint);
-
-    return ResponseEntity
-        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-        .body(entityModel);
-  }
-
-  /**
    * Create a new complaint to be added to the ComplaintRepository
    * @param complaint The body of the complaint
    * @return The body of the created complaint as a ResponseEntity
@@ -117,19 +90,5 @@ public class ComplaintController {
     EntityModel<Complaint> entityModel = complaintAssembler.toModel(complaintRepository.save(complaint));
 
     return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
-  }
-
-  /**
-   * Delete a complaint from the ComplaintRepository
-   * @param complaintId The id for a complaint to be deleted
-   * @return An empty body as a ResponseEntity
-   */
-  @DeleteMapping("/{id}")
-  ResponseEntity<?> deleteComplaint(@PathVariable ("id") int complaintId) {
-    complaintRepository.findById(complaintId).orElseThrow(() -> new ComplaintNotFoundException(complaintId));
-
-    complaintRepository.deleteById(complaintId);
-
-    return ResponseEntity.noContent().build();
   }
 }

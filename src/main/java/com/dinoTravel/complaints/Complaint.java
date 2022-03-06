@@ -1,8 +1,5 @@
 package com.dinoTravel.complaints;
 
-
-import lombok.Data;
-
 import javax.persistence.*;
 
 
@@ -11,7 +8,6 @@ import javax.persistence.*;
  * to be mapped to keys in a relational database
  */
 
-@Data
 @Entity
 @Table(name = "Complaints")
 

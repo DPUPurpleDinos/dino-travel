@@ -13,18 +13,16 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
-	annotationProcessor 'org.projectlombok:lombok'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'mysql:mysql-connector-java'
-	runtimeOnly 'com.h2database:h2'
+	implementation 'org.springframework.boot:spring-boot-starter-web:2.6.4'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.4'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.4'
+	implementation 'org.springframework.boot:spring-boot-starter-hateoas:2.6.4'
+	runtimeOnly 'mysql:mysql-connector-java:8.0.25'
+	runtimeOnly 'com.h2database:h2:2.1.210'
 	implementation 'com.amadeus:amadeus-java:5.8.2'
-	implementation 'com.google.code.gson:gson:2.8.9'
-	implementation 'com.google.api-client:google-api-client:1.32.1'
+	implementation 'com.google.code.gson:gson:2.9.0'
+	implementation 'com.google.api-client:google-api-client:1.33.2'
 	implementation 'org.jsoup:jsoup:1.14.3'
 	implementation 'com.sun.mail:javax.mail:1.6.2'
 }

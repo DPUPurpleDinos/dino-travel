@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.dinoTravel'
-version = '0.0.13-SendEmailVerifications'
+version = '1.0-FinalBuild'
 sourceCompatibility = '17'
 
 repositories {

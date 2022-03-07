@@ -69,10 +69,6 @@ It was more used as a test for the authentication api.
 
 ##Resources
 This folder stores all our important keys. These files are not shared on git hub.
+Because of this you will not be able to run this project if you copy off of GitHub.
 
 Thank you for taking a look at our project and have a good day!
-
-
-
-
-

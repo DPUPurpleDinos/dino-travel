@@ -36,5 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 /src/main/resources/keystore/keystore.p12
+/src/main/resources/keystore/keystore.properties
 /src/main/resources/application.properties
 /src/main/resources/application-test.properties
